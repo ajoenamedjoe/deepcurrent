@@ -1,0 +1,35 @@
+# Private: your API token and settings. Never commit these.
+.env
+.env.*
+!.env.example
+*.env.bak
+
+# Your data: databases, logs, generated reports, backups
+*.db
+*.db-*
+*.sqlite*
+*.db.*.bak
+*.bak
+*.log
+logs/
+reports/
+backups/
+_to_delete/
+portfolio_center.jpg
+
+# Flow Desk artifact build: embeds a captured board (real UW data)
+board.min.json
+flow-board.html
+
+# Python / OS clutter
+__pycache__/
+*.pyc
+.fuse_hidden*
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Share zips built by MAKE_SHARE_ZIP
+*.zip
