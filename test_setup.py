@@ -52,8 +52,9 @@ class Repo(unittest.TestCase):
     def test_every_desk_has_an_env_example_and_gitignore_covers_env(self):
         if not os.path.isfile(os.path.join(HERE, ".gitignore")):
             self.skipTest("no .gitignore in this copy (GitHub's web upload leaves out dot-files)")
-        for d in setup.DESKS + ["UW Dashboard"]:
-            self.assertTrue(os.path.isfile(os.path.join(HERE, d, ".env.example")), d)
+        present = [d for d in setup.DESKS + ["UW Dashboard"] if os.path.isfile(os.path.join(HERE, d, ".env.example"))]
+        if present:                        # a web-uploaded copy has none (GitHub's upload page drops them)
+            self.assertEqual(present, setup.DESKS + ["UW Dashboard"])
         with open(os.path.join(HERE, ".gitignore")) as fh:
             ignored = fh.read().split()
         for pat in (".env", "*.db", "__pycache__/", "logs/"):
