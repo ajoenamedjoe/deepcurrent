@@ -1,0 +1,15 @@
+Statement,Header,Field Name,Field Value
+Statement,Data,Title,Activity Statement
+Account Information,Header,Field Name,Field Value
+Account Information,Data,Account,U7654321
+Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code
+Trades,Data,Order,Stocks,USD,AMZN,"2026-09-21, 10:00:00",20,190.00,191,-3800,-1,3801,0,20,O
+Trades,Data,Order,Stocks,USD,AMZN,"2026-09-23, 11:30:00",-20,195.00,195,3900,-1,-3801,98,0,C
+Trades,SubTotal,,Stocks,USD,AMZN,,0,,,100,-2,0,98,20,
+Trades,Data,Order,Equity and Index Options,USD,QQQ 26SEP26 480 P,"2026-09-22, 09:45:00",-1,2.00,2.1,200,-1.05,-198.95,0,-10,O
+Trades,Data,Order,Equity and Index Options,USD,QQQ 26SEP26 480 P,"2026-09-23, 15:10:00",1,0.50,0.5,-50,-1.05,198.95,147.9,0,C
+Trades,Data,Order,Futures,USD,MESZ6,"2026-09-24, 09:31:00",2,5800,5801,0,-1.24,0,0,10,O
+Trades,Data,Order,Futures,USD,MESZ6,"2026-09-24, 09:50:00",-2,5795,5795,0,-1.24,0,-52.48,0,C
+Trades,Total,,,,,,,,,,,,,,
+Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Underlying,Listing Exch,Multiplier,Expiry,Delivery Month,Type,Strike,Code
+Financial Instrument Information,Data,Futures,MESZ6,MES 19DEC26,1,MES,CME,5,2026-12-19,2026-12,,,

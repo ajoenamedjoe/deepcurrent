@@ -1,0 +1,12 @@
+
+
+Run Date,Account,Action,Symbol,Description,Type,Quantity,Price ($),Commission ($),Fees ($),Accrued Interest ($),Amount ($),Settlement Date
+09/23/2026,Individual *1234,"SOLD CLOSING TRANSACTION CALL (SPY) SPDR S&P500 ETF SEP 25 26 $570 (100 SHS) (Cash)", -SPY260925C570,CALL (SPY) SPDR S&P500 ETF SEP 25 26 $570 (100 SHS),Cash,-1,2.00,0.65,0.03,,199.32,09/24/2026
+09/22/2026,Individual *1234,"BOUGHT OPENING TRANSACTION CALL (SPY) SPDR S&P500 ETF SEP 25 26 $570 (100 SHS) (Cash)", -SPY260925C570,CALL (SPY) SPDR S&P500 ETF SEP 25 26 $570 (100 SHS),Cash,1,1.50,0.65,0.02,,-150.67,09/23/2026
+09/22/2026,Individual *1234,"YOU SOLD INTEL CORP (INTC) (Cash)",INTC,INTEL CORP,Cash,-50,21.00,0,0.01,,1049.99,09/23/2026
+09/20/2026,Individual *1234,"YOU BOUGHT INTEL CORP (INTC) (Cash)",INTC,INTEL CORP,Cash,50,20.00,0,0,,-1000.00,09/22/2026
+09/19/2026,Individual *1234,"DIVIDEND RECEIVED INTEL CORP (INTC) (Cash)",INTC,INTEL CORP,Cash,0,,,,,5.00,
+
+
+"The data and information in this spreadsheet is provided to you solely for your use and is not for distribution."
+"Date downloaded 09/24/2026 10:00 am"

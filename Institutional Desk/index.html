@@ -1,0 +1,1360 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Institutional Desk</title>
+<style>
+/* ---------------------------------------------------------------- tokens
+   Same validated palette as UW Swing Desk so the two desks read as one system. */
+:root {
+  color-scheme: light;
+  --surface-1: #fcfcfb;
+  --surface-2: #f4f4f1;
+  --page: #f9f9f7;
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --border-strong: rgba(11,11,11,0.18);
+
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s4: #eda100;
+  --s5: #e87ba4;
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(11,11,11,.06), 0 4px 12px rgba(11,11,11,.04);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19;
+  --surface-2: #232322;
+  --page: #0d0d0d;
+  --ink-1: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.18);
+
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --s5: #d55181;
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink-1);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1340px; margin: 0 auto; padding: 20px 20px 80px; }
+h1,h2,h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+.mono { font-variant-numeric: tabular-nums; }
+a { color: var(--s1); }
+
+/* ---------------------------------------------------------------- header */
+header {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  margin: -20px -20px 18px; padding: 13px 20px;
+}
+.hdr-top { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.hdr-top h1 { font-size: 17px; }
+.sub { color: var(--ink-2); font-size: 12.5px; }
+.spacer { flex: 1; }
+button, select, input[type=search] {
+  font: inherit; color: var(--ink-1); background: var(--surface-1);
+  border: 1px solid var(--border-strong); border-radius: 7px;
+  padding: 5px 11px; cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--surface-2); }
+button:disabled { opacity: .5; cursor: default; }
+button.primary { background: var(--s1); border-color: var(--s1); color: #fff; }
+button.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(--s1); }
+input[type=search] { cursor: text; min-width: 190px; }
+.progress {
+  margin-top: 9px; display: none; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--ink-2);
+}
+.progress.on { display: flex; }
+.bar { flex: 1; height: 5px; background: var(--grid); border-radius: 3px; overflow: hidden; max-width: 420px; }
+.bar i { display: block; height: 100%; background: var(--s1); width: 0; transition: width .4s ease; }
+
+/* ---------------------------------------------------------------- kpis */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit,minmax(158px,1fr)); gap: 10px; margin-bottom: 16px; }
+.kpi {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 11px 13px; box-shadow: var(--shadow);
+}
+.kpi .lab { font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; }
+.kpi .val { font-size: 23px; font-weight: 600; margin-top: 3px; }
+.kpi .note { font-size: 11.5px; color: var(--ink-2); }
+
+/* ---------------------------------------------------------------- controls */
+.controls {
+  display: flex; gap: 9px; flex-wrap: wrap; align-items: center;
+  padding: 11px 13px; margin-bottom: 16px;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+}
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 5px 13px; background: transparent; }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button.on { background: var(--s1); color: #fff; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.rng { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-2); }
+.rng input { accent-color: var(--s1); }
+
+/* ---------------------------------------------------------------- cards */
+/* align-items:start so a short card does not stretch to its row's tallest */
+.cards { display: grid; grid-template-columns: repeat(auto-fill,minmax(420px,1fr));
+         gap: 13px; align-items: start; }
+.card {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 11px; box-shadow: var(--shadow); overflow: hidden;
+}
+.card-h { display: flex; gap: 12px; align-items: flex-start; padding: 13px 14px 10px; }
+.tk { font-size: 19px; font-weight: 650; letter-spacing: -0.02em; }
+.co { font-size: 12.5px; color: var(--ink-2); line-height: 1.35; }
+.meta { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; }
+.score {
+  margin-left: auto; text-align: right; flex: none;
+}
+.score b { font-size: 22px; font-weight: 650; display: block; line-height: 1.1; }
+.score span { font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; }
+
+.strip {
+  display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  padding: 9px 14px; border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); background: var(--surface-2);
+  font-size: 12px; color: var(--ink-2);
+}
+.strip b { color: var(--ink-1); font-weight: 600; }
+
+.pill {
+  display: inline-block; font-size: 10.5px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 5px;
+  border: 1px solid currentColor;
+}
+.p-new  { color: var(--s3); }
+.p-add  { color: var(--s1); }
+.p-trim { color: var(--serious); }
+.p-exit { color: var(--critical); }
+.p-mut  { color: var(--ink-3); }
+
+table.holders { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+table.holders th {
+  text-align: left; font-weight: 600; font-size: 10.5px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: .05em; padding: 8px 8px 5px;
+}
+table.holders td { padding: 6px 8px; border-top: 1px solid var(--border); vertical-align: middle; }
+table.holders tr:hover td { background: var(--surface-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.fundname { font-weight: 550; }
+.people { color: var(--ink-3); font-size: 11px; }
+.pos { color: var(--good); }
+.neg { color: var(--critical); }
+
+.empty { padding: 56px 20px; text-align: center; color: var(--ink-2); }
+.empty h3 { margin-bottom: 7px; font-size: 15px; }
+
+/* ---------------------------------------------------------------- feed table */
+.feed { width: 100%; border-collapse: collapse; font-size: 12.5px;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.feed th {
+  text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--ink-3); padding: 9px 10px; background: var(--surface-2);
+  border-bottom: 1px solid var(--border); position: sticky; top: 58px; z-index: 5;
+}
+.feed td { padding: 7px 10px; border-top: 1px solid var(--border); }
+.feed tbody tr { cursor: pointer; }
+.feed tbody tr:hover td { background: var(--surface-2); }
+
+/* ---------------------------------------------------------------- drawer */
+.scrim {
+  position: fixed; inset: 0; background: rgba(0,0,0,.42); z-index: 60;
+  display: none; backdrop-filter: blur(2px);
+}
+.scrim.on { display: block; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(700px, 96vw);
+  background: var(--page); border-left: 1px solid var(--border-strong);
+  z-index: 61; overflow-y: auto; padding: 18px 20px 60px;
+  transform: translateX(100%); transition: transform .22s ease;
+}
+.drawer.on { transform: none; }
+.drawer h2 { font-size: 20px; }
+.yearbar { display: flex; gap: 9px; align-items: flex-end; margin: 6px 0 2px; }
+.foot { margin-top: 26px; font-size: 12px; color: var(--ink-3); line-height: 1.65; }
+.foot code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+/* SHARE-CARD-CSS-START */
+/* --------------------------------------------------------- share panel */
+.modal { position:fixed; inset:0; z-index:100; display:none;
+  background:rgba(0,0,0,.55); padding:20px; overflow:auto; backdrop-filter:blur(2px); }
+.modal.open { display:block; }
+.sheet { max-width:1000px; margin:0 auto; background:var(--page);
+  border:1px solid var(--border-strong); border-radius:14px; overflow:hidden;
+  box-shadow:var(--shadow); }
+.sheet-top { display:flex; gap:9px; align-items:center; padding:13px 16px;
+  border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.sheet-top strong { font-size:15px; }
+.sheet-body { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:18px;
+  padding:16px; }
+@media (max-width:860px) { .sheet-body { grid-template-columns:1fr; } }
+#share-canvas { width:100%; height:auto; border:1px solid var(--border);
+  border-radius:10px; background:var(--surface-2); display:block; }
+.share-side label { display:block; font-size:11px; color:var(--ink-3);
+  text-transform:uppercase; letter-spacing:.05em; margin:2px 0 6px; }
+.share-side textarea { width:100%; min-height:190px; font:13px/1.55 inherit;
+  color:var(--ink-1); background:var(--surface-1);
+  border:1px solid var(--border-strong); border-radius:8px; padding:10px;
+  resize:vertical; }
+.share-hint { font-size:11.5px; color:var(--ink-3); margin-top:9px; line-height:1.55; }
+.card-foot { border-top:1px solid var(--border); padding:9px 14px;
+  display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+/* SHARE-CARD-CSS-END */
+</style>
+<script src="http://127.0.0.1:8700/theme.js?desk=institutional"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="hdr-top">
+    <h1 data-uw-name>Institutional Desk</h1>
+    <span class="sub" id="sub">loading…</span>
+    <span class="spacer"></span>
+    <button id="btn-theme" title="Toggle light / dark">◐</button>
+    <button id="btn-scan" class="primary">Refresh filings</button>
+  </div>
+  <div class="progress" id="prog">
+    <span id="prog-stage">…</span>
+    <div class="bar"><i id="prog-bar"></i></div>
+    <span id="prog-detail" class="mono"></span>
+    <button id="btn-stop">Stop</button>
+  </div>
+</header>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="controls">
+  <div class="seg" id="view">
+    <button data-v="clusters" class="on">Clusters</button>
+    <button data-v="feed">Feed</button>
+    <button data-v="funds">Funds</button>
+  </div>
+  <input type="search" id="q" placeholder="ticker, company or fund…">
+  <select id="sector"><option value="">All sectors</option></select>
+  <div class="rng">
+    <label for="minscore">Min score</label>
+    <input type="range" id="minscore" min="0" max="90" step="5" value="0">
+    <b class="mono" id="minscore-v">0</b>
+  </div>
+  <label class="chk"><input type="checkbox" id="onlynew"> New positions only</label>
+  <label class="chk"><input type="checkbox" id="undercost"> At/below a buyer's cost</label>
+  <label class="chk"><input type="checkbox" id="clusteronly"> Clusters only</label>
+  <span class="spacer"></span>
+  <span class="sub mono" id="count"></span>
+</div>
+
+<div id="main"></div>
+
+<div class="foot" id="foot"></div>
+</div>
+
+<!-- SHARE-CARD-HTML-START -->
+<!-- ------------------------------------------------------- share panel -->
+<div class="modal" id="share-modal">
+  <div class="sheet">
+    <div class="sheet-top">
+      <strong id="share-title">Share card</strong>
+      <span class="spacer" style="flex:1"></span>
+      <div class="seg" id="share-detail">
+        <button data-detail="full" class="on">Detailed</button>
+        <button data-detail="nonames">No names</button>
+      </div>
+      <div class="seg" id="share-theme">
+        <button data-stheme="dark" class="on">Dark</button>
+        <button data-stheme="light">Light</button>
+      </div>
+      <button id="share-copy">Copy image</button>
+      <button id="share-dl">Download PNG</button>
+      <button id="share-close">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div><canvas id="share-canvas" width="1080" height="1400"></canvas></div>
+      <div class="share-side">
+        <label>Caption — never baked into the image</label>
+        <textarea id="share-caption" spellcheck="false"></textarea>
+        <button id="share-copy-caption" style="margin-top:9px">Copy caption</button>
+        <div class="share-hint" id="share-hint"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- SHARE-CARD-HTML-END -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer"></aside>
+
+<script>
+"use strict";
+
+// ------------------------------------------------------------------ state
+const S = {
+  state: null, clusters: [], alerts: [], funds: [],
+  view: "clusters", q: "", sector: "", minScore: 0,
+  onlyNew: false, underCost: false, clusterOnly: false,
+  pollTimer: null,
+};
+
+// ------------------------------------------------------------------ utils
+const $ = (id) => document.getElementById(id);
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function money(v) {
+  const n = Number(v);
+  if (!isFinite(n) || n === 0) return "—";
+  const a = Math.abs(n), s = n < 0 ? "-$" : "$";
+  if (a >= 1e12) return s + (a / 1e12).toFixed(2) + "T";
+  if (a >= 1e9)  return s + (a / 1e9).toFixed(a >= 1e10 ? 1 : 2) + "B";
+  if (a >= 1e6)  return s + (a / 1e6).toFixed(a >= 1e8 ? 0 : 1) + "M";
+  if (a >= 1e3)  return s + (a / 1e3).toFixed(0) + "K";
+  return s + a.toFixed(0);
+}
+function pct(v, digits) {
+  if (v == null || !isFinite(v)) return "—";
+  const d = digits == null ? 0 : digits;
+  return (v > 0 ? "+" : "") + (v * 100).toFixed(d) + "%";
+}
+function cls(v) { return v == null ? "" : (v > 0 ? "pos" : v < 0 ? "neg" : ""); }
+function price(v) {
+  const n = Number(v);
+  return isFinite(n) && n > 0 ? "$" + n.toFixed(n < 10 ? 2 : 2) : "—";
+}
+function kindPill(k) {
+  const m = { NEW: "p-new", ADD: "p-add", TRIM: "p-trim", EXIT: "p-exit" };
+  return '<span class="pill ' + (m[k] || "p-mut") + '">' + esc(k) + "</span>";
+}
+// Some filers have a short_name, some do not, so the list mixes "Monarch
+// Alternative Capital Lp" with "REDWOOD CAPITAL MANAGEMENT, LLC". Even it out.
+function fundLabel(name) {
+  const s = String(name || "");
+  if (!s || s !== s.toUpperCase()) return s;
+  return s.toLowerCase().replace(/(^|[\s(.,\/-])([a-z])/g, (m, a, b) => a + b.toUpperCase())
+          .replace(/\b(Llc|Lp|Llp|Lllp|Ltd|Inc|Lp\.|L\.p\.|Bvi|Hk|Ag|Sa|Nv|Plc)\b/g,
+                   (w) => w.toUpperCase());
+}
+function trajLabel(t) {
+  return ({ building: "building", new_conviction: "fresh", volatile: "volatile",
+            steady: "steady", harvesting: "harvesting", closing: "closing" })[t] || "—";
+}
+
+// ------------------------------------------------------------------ charts
+// Two small marks only. Both carry a text value beside them so colour is
+// never the sole carrier of meaning.
+
+function niBars(years) {
+  // 3-4 annual net-income bars, oldest -> newest, zero-baselined.
+  if (!years || !years.length) return "";
+  const ys = years.slice().reverse();
+  const vals = ys.map((y) => Number(y.net_income) || 0);
+  const max = Math.max(...vals.map(Math.abs), 1);
+  const w = 15, gap = 5, h = 26;
+  const width = ys.length * (w + gap) - gap;
+  let out = '<svg width="' + width + '" height="' + (h + 12) + '" role="img" aria-label="annual net income">';
+  ys.forEach((y, i) => {
+    const v = Number(y.net_income) || 0;
+    const bh = Math.max(2, Math.round((Math.abs(v) / max) * h));
+    const x = i * (w + gap);
+    const yy = v >= 0 ? h - bh : h;
+    const col = v >= 0 ? "var(--s3)" : "var(--critical)";
+    out += '<rect x="' + x + '" y="' + yy + '" width="' + w + '" height="' + bh +
+           '" rx="1.5" fill="' + col + '"><title>FY' + esc(y.year) + " net income " +
+           esc(money(v)) + "</title></rect>";
+    out += '<text x="' + (x + w / 2) + '" y="' + (h + 10) +
+           '" font-size="8.5" text-anchor="middle" fill="var(--ink-3)">' +
+           esc(String(y.year).slice(2)) + "</text>";
+  });
+  out += "</svg>";
+  return out;
+}
+
+function unitsSpark(hist) {
+  // 8-quarter position size, oldest -> newest.
+  if (!hist || hist.length < 2) return "";
+  const v = hist.slice().reverse().map((x) => Number(x) || 0);
+  const max = Math.max(...v, 1);
+  const w = 62, h = 16;
+  const step = w / (v.length - 1);
+  const pts = v.map((x, i) => (i * step).toFixed(1) + "," + (h - (x / max) * (h - 2) - 1).toFixed(1));
+  return '<svg width="' + w + '" height="' + h + '" role="img" aria-label="8 quarter position size">' +
+    '<polyline fill="none" stroke="var(--s1)" stroke-width="1.4" stroke-linejoin="round" points="' +
+    pts.join(" ") + '"></polyline>' +
+    '<circle cx="' + (w).toFixed(1) + '" cy="' +
+    (h - (v[v.length - 1] / max) * (h - 2) - 1).toFixed(1) +
+    '" r="1.9" fill="var(--s1)"></circle></svg>';
+}
+
+// ------------------------------------------------------------------ data
+async function getJSON(url, opts) {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(url + " -> " + r.status);
+  return r.json();
+}
+
+async function loadAll() {
+  const [st, cl, al] = await Promise.all([
+    getJSON("/api/state"),
+    getJSON("/api/clusters").catch(() => ({ clusters: [] })),
+    getJSON("/api/alerts").catch(() => ({ alerts: [] })),
+  ]);
+  S.state = st;
+  S.clusters = cl.clusters || [];
+  S.alerts = al.alerts || [];
+  fillSectors();
+  render();
+}
+
+async function loadFunds() {
+  if (S.funds.length) return;
+  const r = await getJSON("/api/funds").catch(() => ({ funds: [] }));
+  S.funds = r.funds || [];
+}
+
+// ------------------------------------------------------------------ header
+function renderHeader() {
+  const st = S.state || {};
+  const rd = st.report_date;
+  const bits = [];
+  if (rd) {
+    bits.push("quarter ending <b>" + esc(rd) + "</b>");
+    bits.push(nextWindow(rd));
+  } else {
+    bits.push("no scan yet — hit <b>Refresh filings</b>");
+  }
+  if (st.last_scan_finished) bits.push("scanned " + esc(st.last_scan_finished.replace("T", " ")));
+  $("sub").innerHTML = bits.join(" &nbsp;·&nbsp; ");
+
+  const sc = (st.scan || {});
+  const running = sc.running;
+  $("btn-scan").disabled = running;
+  $("btn-scan").textContent = running ? "Scanning…" : "Refresh filings";
+  $("prog").className = "progress" + (running || sc.error ? " on" : "");
+  if (running || sc.error) {
+    $("prog-stage").textContent = sc.error ? "error: " + sc.error : (sc.stage || "");
+    const p = sc.total ? Math.round((sc.done / sc.total) * 100) : 0;
+    $("prog-bar").style.width = p + "%";
+    $("prog-detail").textContent = (sc.detail || "") + "  ·  " + (sc.api_calls || 0) + " API calls";
+  }
+}
+
+function nextWindow(rd) {
+  // 13F is due 45 days after quarter end. Say when the next wave lands.
+  const q = new Date(rd + "T00:00:00");
+  const next = new Date(q.getTime());
+  next.setMonth(next.getMonth() + 3);
+  const due = new Date(next.getTime() + 45 * 864e5);
+  const days = Math.ceil((due - new Date()) / 864e5);
+  if (days <= 0) return "<b>next filings are due now</b>";
+  return "next wave ~<b>" + due.toISOString().slice(0, 10) + "</b> (" + days + "d)";
+}
+
+function renderKPIs() {
+  const st = S.state || {}, c = st.counts || {}, cfg = st.config || {};
+  const shown = visibleClusters();
+  const clusterMin = cfg.cluster_min_funds || 3;
+  const nCluster = S.clusters.filter((x) => x.n_buyers >= clusterMin).length;
+  const nNew = S.clusters.reduce((a, x) => a + (x.n_new || 0), 0);
+  const caps = S.clusters.map((x) => Number(x.marketcap) || 0).filter((x) => x > 0).sort((a, b) => a - b);
+  const med = caps.length ? caps[Math.floor(caps.length / 2)] : 0;
+
+  const tiles = [
+    ["Names on the board", S.clusters.length, shown.length + " shown after filters"],
+    ["Cluster names", nCluster, clusterMin + "+ qualifying funds buying"],
+    ["New positions", nNew, "first-ever buy this quarter"],
+    ["Funds in universe", c.funds_kept || 0,
+      money(cfg.fund_min_aum) + "–" + money(cfg.fund_max_aum) + ", ≤" + (cfg.fund_max_positions || 0) + " names"],
+    ["Median market cap", money(med), "cap " + money(cfg.co_max_marketcap)],
+  ];
+  $("kpis").innerHTML = tiles.map((t) =>
+    '<div class="kpi"><div class="lab">' + esc(t[0]) + '</div><div class="val mono">' +
+    esc(String(t[1])) + '</div><div class="note">' + esc(t[2]) + "</div></div>").join("");
+}
+
+function fillSectors() {
+  const sel = $("sector");
+  const cur = sel.value;
+  const set = new Set(S.clusters.map((c) => c.sector).filter(Boolean));
+  sel.innerHTML = '<option value="">All sectors</option>' +
+    [...set].sort().map((s) => '<option>' + esc(s) + "</option>").join("");
+  sel.value = cur;
+}
+
+// ------------------------------------------------------------------ filters
+function matchQ(c) {
+  if (!S.q) return true;
+  const q = S.q.toLowerCase();
+  if ((c.ticker || "").toLowerCase().includes(q)) return true;
+  if ((c.full_name || "").toLowerCase().includes(q)) return true;
+  return (c.buyers || []).concat(c.sellers || []).some((b) =>
+    (b.fund_name || "").toLowerCase().includes(q) ||
+    (b.people || []).join(" ").toLowerCase().includes(q));
+}
+
+function visibleClusters() {
+  const clusterMin = (S.state && S.state.config && S.state.config.cluster_min_funds) || 3;
+  return S.clusters.filter((c) => {
+    if (Number(c.score) < S.minScore) return false;
+    if (S.sector && c.sector !== S.sector) return false;
+    if (S.onlyNew && !(c.n_new > 0)) return false;
+    if (S.clusterOnly && c.n_buyers < clusterMin) return false;
+    if (S.underCost && !(c.best_vs_cost != null && c.best_vs_cost <= 0)) return false;
+    return matchQ(c);
+  });
+}
+
+// ------------------------------------------------------------------ views
+function render() {
+  renderHeader();
+  renderKPIs();
+  renderFoot();
+  if (S.view === "clusters") renderClusters();
+  else if (S.view === "feed") renderFeed();
+  else renderFunds();
+}
+
+function emptyBox(title, body) {
+  return '<div class="empty"><h3>' + esc(title) + "</h3><div>" + body + "</div></div>";
+}
+
+function renderClusters() {
+  const list = visibleClusters();
+  $("count").textContent = list.length + " of " + S.clusters.length + " names";
+  if (!S.clusters.length) {
+    $("main").innerHTML = emptyBox(
+      "Nothing on the board yet",
+      "Hit <b>Refresh filings</b> to pull the latest 13F wave. The first run takes " +
+      "a while — it reads every filer, keeps the small concentrated ones, then " +
+      "checks three years of accounts on each name they bought.");
+    return;
+  }
+  if (!list.length) { $("main").innerHTML = emptyBox("No names match these filters", "Loosen the score or clear the search."); return; }
+
+  $("main").innerHTML = '<div class="cards">' + list.map(card).join("") + "</div>";
+  document.querySelectorAll("[data-tk]").forEach((el) =>
+    el.addEventListener("click", () => openTicker(el.getAttribute("data-tk"))));
+}
+
+function card(c) {
+  const years = c.annual_years || [];
+  const py = c.profitable_years || 0;
+  const buyers = c.buyers || [];
+  const sellers = c.sellers || [];
+
+  const rows = buyers.slice(0, 8).map((b) => {
+    const w = b.weight != null ? (Number(b.weight) * 100).toFixed(1) + "%" : "—";
+    return "<tr>" +
+      '<td><div class="fundname">' + esc(fundLabel(b.fund) || "—") + "</div>" +
+      (b.people && b.people.length
+        ? '<div class="people">' + esc(b.people.slice(0, 2).join(", ")) + "</div>" : "") +
+      "</td>" +
+      "<td>" + kindPill(b.kind) + "</td>" +
+      '<td class="num mono">' + esc(money(b.value)) + "</td>" +
+      '<td class="num mono">' + esc(w) + "</td>" +
+      '<td class="num mono ' + cls(b.vs_cost) + '">' + esc(pct(b.vs_cost)) + "</td>" +
+      "<td>" + unitsSpark(b.historical_units) +
+      '<div class="people">' + esc(trajLabel(b.trajectory)) + "</div></td>" +
+      "</tr>";
+  }).join("");
+
+  const more = buyers.length > 8
+    ? '<tr><td colspan="6" class="people">+ ' + (buyers.length - 8) + " more buyers</td></tr>" : "";
+
+  const sellNote = sellers.length
+    ? '<div class="strip" style="border-top:0"><span class="pill p-exit">' + sellers.length +
+      " cutting</span> <span>" + esc(sellers.slice(0, 3).map((s) => fundLabel(s.fund)).join(", ")) +
+      (sellers.length > 3 ? " +" + (sellers.length - 3) : "") + "</span></div>"
+    : "";
+
+  return '<div class="card">' +
+    '<div class="card-h">' +
+      "<div>" +
+        '<div class="tk" data-tk="' + esc(c.ticker) + '" style="cursor:pointer">' +
+          esc(c.ticker) + "</div>" +
+        '<div class="co">' + esc(c.full_name || "") + "</div>" +
+        '<div class="meta">' + esc(c.sector || "—") + " · " + esc(money(c.marketcap)) +
+          " cap · " + esc(money(c.total_assets)) + " assets</div>" +
+      "</div>" +
+      '<div class="score"><b class="mono">' + esc(Number(c.score).toFixed(0)) +
+        "</b><span>score</span></div>" +
+    "</div>" +
+
+    '<div class="strip">' +
+      "<span><b>" + c.n_buyers + "</b> buying" +
+        (c.n_new ? " · <b>" + c.n_new + "</b> new" : "") + "</span>" +
+      "<span><b>" + esc(money(c.buy_value)) + "</b> held</span>" +
+      "<span title='consecutive profitable fiscal years, most recent first'><b>" +
+        (py >= 4 ? "4+" : py) + "</b> straight profitable yrs</span>" +
+      "<span>" + niBars(years) + "</span>" +
+      (c.ni_growth != null
+        ? "<span>NI " + '<b class="' + cls(c.ni_growth) + '">' + esc(pct(c.ni_growth)) +
+          "</b> y/y</span>" : "") +
+      (c.best_vs_cost != null
+        ? "<span>best entry <b class='" + cls(c.best_vs_cost) + "'>" +
+          esc(pct(c.best_vs_cost)) + "</b> vs cost</span>" : "") +
+    "</div>" +
+
+    '<table class="holders"><thead><tr>' +
+      "<th>Fund</th><th>Move</th><th class='num'>Position</th>" +
+      "<th class='num'>Wt</th><th class='num'>Now vs cost</th><th>8q</th>" +
+    "</tr></thead><tbody>" + rows + more + "</tbody></table>" +
+    sellNote +
+    '<div class="card-foot">' +
+      '<button class="share-open" data-tk="' + esc(c.ticker) + '">' +
+        'Share card</button>' +
+    "</div>" +
+  "</div>";
+}
+
+function renderFeed() {
+  const clusterMin = (S.state && S.state.config && S.state.config.cluster_min_funds) || 3;
+  const keep = new Set(visibleClusters().map((c) => c.ticker));
+  const list = S.alerts.filter((a) => keep.has(a.ticker) &&
+    (!S.onlyNew || a.kind === "NEW") && Number(a.score) >= S.minScore);
+  $("count").textContent = list.length + " events";
+  if (!list.length) { $("main").innerHTML = emptyBox("No events match", "Loosen the filters."); return; }
+
+  $("main").innerHTML = '<table class="feed"><thead><tr>' +
+    "<th>Ticker</th><th>Move</th><th>Fund</th><th class='num'>Fund AUM</th>" +
+    "<th class='num'>Names</th><th class='num'>Position</th><th class='num'>Wt</th>" +
+    "<th class='num'>Change</th><th>Trajectory</th><th class='num'>vs cost</th>" +
+    "<th class='num'>Score</th></tr></thead><tbody>" +
+    list.map((a) =>
+      '<tr data-tk="' + esc(a.ticker) + '">' +
+      "<td><b>" + esc(a.ticker) + "</b><div class='people'>" + esc(a.full_name || "") + "</div></td>" +
+      "<td>" + kindPill(a.kind) + "</td>" +
+      "<td>" + esc(fundLabel(a.fund_short || a.fund_name)) + "</td>" +
+      "<td class='num mono'>" + esc(money(a.fund_aum)) + "</td>" +
+      "<td class='num mono'>" + esc(a.position_count == null ? "—" : a.position_count) + "</td>" +
+      "<td class='num mono'>" + esc(money(a.value)) + "</td>" +
+      "<td class='num mono'>" + (a.weight != null ? (a.weight * 100).toFixed(1) + "%" : "—") + "</td>" +
+      "<td class='num mono " + cls(a.change_perc) + "'>" + esc(pct(a.change_perc)) + "</td>" +
+      "<td>" + esc(trajLabel(a.trajectory)) + "</td>" +
+      "<td class='num mono " + cls(a.vs_cost) + "'>" + esc(pct(a.vs_cost)) + "</td>" +
+      "<td class='num mono'><b>" + esc(Number(a.score).toFixed(0)) + "</b></td>" +
+      "</tr>").join("") + "</tbody></table>";
+  document.querySelectorAll("[data-tk]").forEach((el) =>
+    el.addEventListener("click", () => openTicker(el.getAttribute("data-tk"))));
+}
+
+async function renderFunds() {
+  await loadFunds();
+  const q = S.q.toLowerCase();
+  const list = S.funds.filter((f) => !q ||
+    (f.name || "").toLowerCase().includes(q) ||
+    (f.people || []).join(" ").toLowerCase().includes(q));
+  $("count").textContent = list.length + " funds";
+  if (!list.length) { $("main").innerHTML = emptyBox("No funds yet", "Run a scan first."); return; }
+  $("main").innerHTML = '<table class="feed"><thead><tr>' +
+    "<th>Fund</th><th>People</th><th>Tags</th><th class='num'>13F value</th>" +
+    "<th class='num'>Positions</th><th class='num'>Equity names</th></tr></thead><tbody>" +
+    list.map((f) => "<tr>" +
+      "<td><b>" + esc(fundLabel(f.short_name || f.name)) + "</b></td>" +
+      "<td class='people'>" + esc((f.people || []).join(", ")) + "</td>" +
+      "<td class='people'>" + esc((f.tags || []).join(", ")) + "</td>" +
+      "<td class='num mono'>" + esc(money(f.total_value)) + "</td>" +
+      "<td class='num mono'>" + esc(f.position_count) + "</td>" +
+      "<td class='num mono'>" + esc(f.share_positions == null ? "—" : f.share_positions) + "</td>" +
+      "</tr>").join("") + "</tbody></table>";
+}
+
+// ------------------------------------------------------------------ drawer
+async function openTicker(tk) {
+  $("scrim").classList.add("on");
+  $("drawer").classList.add("on");
+  $("drawer").innerHTML = '<div class="empty">loading ' + esc(tk) + "…</div>";
+  let d;
+  try { d = await getJSON("/api/ticker/" + encodeURIComponent(tk)); }
+  catch (e) { $("drawer").innerHTML = emptyBox("Could not load " + tk, esc(e.message)); return; }
+
+  const f = d.fundamentals || {};
+  const m = d.meta || {};
+  const years = f.annual_years || [];
+  const holders = d.holders || [];
+  const cluster = S.clusters.find((c) => c.ticker === tk);
+
+  $("drawer").innerHTML =
+    '<button id="btn-close" style="float:right">Close</button>' +
+    "<h2>" + esc(tk) + "</h2>" +
+    '<div class="co">' + esc(m.full_name || "") + " · " + esc(m.sector || "—") + "</div>" +
+    '<div class="strip" style="margin:13px 0;border-radius:8px;border:1px solid var(--border)">' +
+      "<span>cap <b>" + esc(money(m.marketcap)) + "</b></span>" +
+      "<span>price <b>" + esc(price(m.close)) + "</b></span>" +
+      "<span>assets <b>" + esc(money(f.total_assets)) + "</b></span>" +
+      "<span>equity <b>" + esc(money(f.shareholder_equity)) + "</b></span>" +
+      "<span>revenue <b>" + esc(money(f.revenue_latest)) + "</b></span>" +
+    "</div>" +
+
+    "<h3 style='margin:16px 0 6px;font-size:13px'>Annual net income" +
+      (f.fy_end ? " <span class='people'>through FY" + esc(String(f.fy_end).slice(0, 4)) + "</span>" : "") +
+    "</h3>" +
+    (years.length
+      ? '<table class="holders"><thead><tr><th>FY</th><th class="num">Revenue</th>' +
+        '<th class="num">Operating income</th><th class="num">Net income</th></tr></thead><tbody>' +
+        years.map((y) => "<tr><td>" + esc(y.year) + "</td>" +
+          '<td class="num mono">' + esc(money(y.revenue)) + "</td>" +
+          '<td class="num mono ' + cls(y.operating_income) + '">' + esc(money(y.operating_income)) + "</td>" +
+          '<td class="num mono ' + cls(y.net_income) + '">' + esc(money(y.net_income)) + "</td></tr>").join("") +
+        "</tbody></table>"
+      : "<div class='people'>no annual statements cached</div>") +
+    (f.reject_reason ? "<div class='people' style='margin-top:6px'>screen note: " +
+      esc(f.reject_reason) + "</div>" : "") +
+
+    "<h3 style='margin:20px 0 6px;font-size:13px'>Every qualifying fund holding it (" +
+      holders.length + ")</h3>" +
+    '<table class="holders"><thead><tr><th>Fund</th><th class="num">Position</th>' +
+      '<th class="num">Wt</th><th class="num">Units Δ</th><th class="num">Cost</th>' +
+      '<th class="num">Since first buy</th><th>8q</th></tr></thead><tbody>' +
+    holders.map((h) => "<tr>" +
+      "<td><div class='fundname'>" + esc(fundLabel(h.fund_short || h.fund_name)) + "</div>" +
+        "<div class='people'>" + esc(money(h.fund_aum)) + " · " +
+        esc(h.position_count == null ? "?" : h.position_count) + " names</div></td>" +
+      '<td class="num mono">' + esc(money(h.value)) + "</td>" +
+      '<td class="num mono">' + (h.perc_of_share_value != null
+        ? (h.perc_of_share_value * 100).toFixed(1) + "%" : "—") + "</td>" +
+      '<td class="num mono ' + cls(h.units_change) + '">' +
+        (h.units_change ? (h.units_change > 0 ? "+" : "") + Number(h.units_change).toLocaleString() : "0") +
+      "</td>" +
+      '<td class="num mono">' + esc(price(h.avg_price)) + "</td>" +
+      '<td class="num mono ' + cls(h.price_change_since_first_buy_perc) + '">' +
+        esc(pct(h.price_change_since_first_buy_perc)) + "</td>" +
+      "<td>" + unitsSpark(h.historical_units) + "</td>" +
+      "</tr>").join("") + "</tbody></table>" +
+    (cluster ? "<div class='foot'>Cluster score " + esc(Number(cluster.score).toFixed(0)) +
+      " — driven by " + cluster.n_buyers + " buyer(s), " + cluster.n_new + " new.</div>" : "");
+
+  $("btn-close").addEventListener("click", closeDrawer);
+}
+
+function closeDrawer() {
+  $("scrim").classList.remove("on");
+  $("drawer").classList.remove("on");
+}
+
+// ------------------------------------------------------------------ footer
+function renderFoot() {
+  const cfg = (S.state && S.state.config) || {};
+  const c = (S.state && S.state.counts) || {};
+  $("foot").innerHTML =
+    "<b>How this board is built.</b> Every 13F filer is loaded (" + (c.institutions || 0) +
+    " of them), then cut to funds holding " + money(cfg.fund_min_aum) + "–" +
+    money(cfg.fund_max_aum) + " with no more than <code>" + (cfg.fund_max_positions || 0) +
+    "</code> positions — small books, real conviction, no index-sized holding lists. " +
+    "Their position changes become events: a first-ever buy (NEW), an add of " +
+    Math.round((cfg.min_add_perc || 0) * 100) + "%+ (ADD), a cut of " +
+    Math.round(Math.abs(cfg.max_trim_perc || 0) * 100) + "%+ (TRIM), or a full exit (EXIT), " +
+    "each above " + money(cfg.min_position_value) + ". " +
+    "A name only reaches this board if the company itself clears the screen: market cap under " +
+    money(cfg.co_max_marketcap) + ", total assets under " + money(cfg.co_max_assets) +
+    ", and positive net income in each of the last <code>" + (cfg.min_profit_years || 3) +
+    "</code> audited fiscal years (USD reporters only — " + (c.fundamentals_passing || 0) +
+    " of " + (c.fundamentals_cached || 0) + " checked names pass). " +
+    "<br><br><b>On the score.</b> 0–100 from position weight in the fund, how concentrated " +
+    "that fund is, the 8-quarter trajectory, how many funds are in the same name, earnings " +
+    "growth, and where price sits against the buyer's average cost. These weights are " +
+    "reasoned, not fitted — every component is stored per event so they can be tested once " +
+    "a few quarters of history pile up. " +
+    "<br><br><b>Timing.</b> 13F data is quarterly and filed up to 45 days after quarter end, " +
+    "so positions here are as of the report date, not today. The <i>now vs cost</i> column " +
+    "uses the current price against the fund's average entry, which is the part that stays " +
+    "actionable.";
+}
+
+// ------------------------------------------------------------------ wiring
+$("btn-theme").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("idesk-theme", next); } catch (e) { /* ignore */ }
+});
+try {
+  const t = localStorage.getItem("idesk-theme");
+  if (t) document.documentElement.setAttribute("data-theme", t);
+} catch (e) { /* ignore */ }
+
+$("btn-scan").addEventListener("click", async () => {
+  $("btn-scan").disabled = true;
+  await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {});
+  poll(true);
+});
+$("btn-stop").addEventListener("click", () => fetch("/api/stop", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }));
+
+document.querySelectorAll("#view button").forEach((b) =>
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#view button").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on");
+    S.view = b.getAttribute("data-v");
+    render();
+  }));
+
+$("q").addEventListener("input", (e) => { S.q = e.target.value.trim(); render(); });
+$("sector").addEventListener("change", (e) => { S.sector = e.target.value; render(); });
+$("minscore").addEventListener("input", (e) => {
+  S.minScore = Number(e.target.value); $("minscore-v").textContent = e.target.value; render();
+});
+$("onlynew").addEventListener("change", (e) => { S.onlyNew = e.target.checked; render(); });
+$("undercost").addEventListener("change", (e) => { S.underCost = e.target.checked; render(); });
+$("clusteronly").addEventListener("change", (e) => { S.clusterOnly = e.target.checked; render(); });
+$("scrim").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+
+// While a scan runs, poll state often and reload results when it finishes.
+async function poll(force) {
+  try {
+    const st = await getJSON("/api/state");
+    const wasRunning = S.state && S.state.scan && S.state.scan.running;
+    S.state = st;
+    renderHeader();
+    if (st.scan.running) {
+      renderKPIs();
+      clearTimeout(S.pollTimer);
+      S.pollTimer = setTimeout(poll, 1500);
+    } else if (wasRunning || force) {
+      S.funds = [];
+      await loadAll();
+    }
+  } catch (e) { /* server restarting; try again shortly */
+    clearTimeout(S.pollTimer);
+    S.pollTimer = setTimeout(poll, 3000);
+  }
+}
+
+
+/* SHARE-CARD-JS-START */
+const SHARE_META = { brand: "Institutional Desk", site: "", build: "2026-09-11 15:31" };
+/* ==================================================== share card (canvas)
+   Ported from the Confluence / Insider desks, adapted to the cluster card.
+
+   Drawn on a canvas, not screenshotted from the DOM. Rasterising live HTML
+   needs foreignObject plus inlined fonts and taints the canvas differently in
+   every browser; drawing makes the output deterministic and lets the image
+   carry its own type scale, its own legend and a provenance footer that the
+   on-screen card does not need.
+
+   Two-pass measure-then-draw, because resizing a canvas CLEARS it and the
+   height depends on how many funds and fiscal years there are.
+
+   Three rules inherited from the siblings, all of them earned:
+     * every long string goes through fitText() against a MEASURED width --
+       a guessed reserve is what clipped a footer date to "Sep 1..." before;
+     * ephemeral text never goes in the image (the board's "next wave in 66d"
+       countdown is wrong the moment the PNG outlives the day it was made);
+     * a derived claim sits next to the numbers it came from, so a
+       contradiction is visible at a glance -- here, "profitable 3 years
+       running" prints directly beside the three net-income figures.
+
+   One thing changed rather than copied: the siblings cap height with
+   min(measured, MAXH), which silently draws the overflow off-canvas. This
+   version DROPS fund rows until the content fits, and says how many it
+   dropped. Clipping mid-row looks like a rendering fault; "+3 more" does not. */
+
+const SP = {
+  dark:  { bg:"#1a1a19", panel:"#232322", ink1:"#ffffff", ink2:"#c3c2b7",
+           ink3:"#898781", grid:"#2c2c2a", s1:"#3987e5", s2:"#d95926",
+           s3:"#199e70", bad:"#d03b3b", line:"rgba(255,255,255,.12)" },
+  light: { bg:"#fcfcfb", panel:"#f4f4f1", ink1:"#0b0b0b", ink2:"#52514e",
+           ink3:"#898781", grid:"#e1e0d9", s1:"#2a78d6", s2:"#eb6834",
+           s3:"#1baf7a", bad:"#d03b3b", line:"rgba(11,11,11,.12)" },
+};
+// 4:5 is 1080x1350. The sibling desks cap at 1400, which is 50px TALLER
+// than the crop they say it survives -- so the tallest cards were exactly
+// the ones losing their footer. 1350 is the real number.
+const SW = 1080, SPAD = 64, SMAXH = 1350;
+const shareState = { ticker:null, detail:"full", theme:"dark", trimmed:0 };
+
+function shareCard() {
+  return (S.clusters || []).find(c => c.ticker === shareState.ticker) || null;
+}
+
+/* Share buttons carry the ticker in data-tk and are wired here, never through an inline onclick:
+   an HTML-escaped quote is decoded again inside onclick, so a hostile ticker could break out (2026-09-26). */
+document.addEventListener("click", e => { const b = e.target.closest(".share-open"); if (b) openShare(b.dataset.tk); });
+
+function openShare(ticker) {
+  const card = (S.clusters || []).find(c => c.ticker === ticker);
+  if (!card) return;
+  shareState.ticker = ticker;
+  $("share-title").textContent = "Share " + ticker;
+  $("share-modal").classList.add("open");
+  $("share-caption").value = draftCaption(card);
+  drawShare();
+  const ok = typeof ClipboardItem !== "undefined" && navigator.clipboard
+             && navigator.clipboard.write;
+  $("share-copy").disabled = !ok;
+  $("share-hint").textContent = ok
+    ? "Portrait, 1080px wide and capped at 1350 tall — exactly 4:5, so nothing "
+    + "is cropped. "
+    + "The caption is yours to edit and is never drawn into the image."
+    : "This browser has no clipboard image support — use Download PNG. "
+    + "(127.0.0.1 counts as a secure context in Chrome and Edge.)";
+}
+
+function closeShare() {
+  $("share-modal").classList.remove("open");
+  shareState.ticker = null;
+}
+
+/* The caption is plain text the user can edit and post alongside the image.
+   It is deliberately NOT drawn into the PNG: baked text cannot be corrected,
+   translated, or shortened for a platform that counts characters. */
+function draftCaption(c) {
+  const L = [];
+  const nb = c.n_buyers || 0, nn = c.n_new || 0;
+  L.push(`${c.ticker} — ${nb} small fund${nb === 1 ? "" : "s"} buying`
+    + (nn ? `, ${nn} of them opening a brand-new position.` : "."));
+  L.push(`${money(c.buy_value)} held across them as of the ${c.report_date
+    || (S.state && S.state.report_date) || ""} 13F.`);
+  const py = c.profitable_years || 0;
+  const bits = [];
+  if (c.marketcap) bits.push(`${money(c.marketcap)} market cap`);
+  if (py >= 1) bits.push(`profitable in each of the last ${Math.min(py, 4)} fiscal years`);
+  if (c.ni_growth != null) bits.push(`net income ${pct(c.ni_growth)} y/y`);
+  if (bits.length) L.push(`${c.full_name || c.ticker}: ${bits.join(", ")}.`);
+  if (c.best_vs_cost != null && c.best_vs_cost <= 0) {
+    // pct() prefixes a sign, so pct(abs(x)) reads "+9% below" -- a sentence
+    // that argues with itself. State the magnitude bare.
+    L.push(`Still ${(Math.abs(c.best_vs_cost) * 100).toFixed(0)}% below the average `
+      + `price the closest buyer paid.`);
+  }
+  if (c.n_sellers) {
+    L.push(`${c.n_sellers} other qualifying fund${c.n_sellers === 1 ? " was" : "s were"} `
+      + `cutting the same name.`);
+  }
+  L.push("");
+  L.push("Not investment advice. 13F positions are filed up to 45 days after the "
+       + "quarter they describe. Data via Unusual Whales.");
+  return L.join("\n");
+}
+
+/* theme engine (dashboard): card colours and fonts follow the active theme; Paper = unchanged */
+function uwLabel(fb){ return (window.UWBrand && window.UWBrand.label) || fb; }  /* name from the dashboard: "Deep Current · Valuation" */
+function uwPal(base, dark) { return window.UWTheme ? window.UWTheme.pal(base, dark) : base; }
+function uwFont(size, fallback) { return window.UWTheme ? window.UWTheme.font(size >= 40 ? "head" : "body", fallback) : fallback; }
+window.addEventListener("uw-theme", () => { if (shareState.ticker) drawShare(); });
+
+function drawShare() {
+  const c = shareCard();
+  if (!c) return;
+  const P = uwPal(SP[shareState.theme], shareState.theme === "dark");
+  const full = shareState.detail === "full";
+  const cv = $("share-canvas");
+
+  // Pass 1: measure at full length, then drop fund rows until it fits rather
+  // than letting the cap clip a row in half.
+  let rows = Math.min(full ? 6 : 8, (c.buyers || []).length);
+  let h = layoutShare(cv.getContext("2d"), c, P, full, rows, false);
+  while (h > SMAXH && rows > 1) {
+    rows -= 1;
+    h = layoutShare(cv.getContext("2d"), c, P, full, rows, false);
+  }
+  shareState.trimmed = Math.max(0, (c.buyers || []).length - rows);
+
+  cv.width = SW;
+  cv.height = Math.min(SMAXH, Math.max(600, h));   // resizing CLEARS the canvas
+  layoutShare(cv.getContext("2d"), c, P, full, rows, true, cv.height);
+}
+
+function layoutShare(x, c, P, full, rows, paint, H) {
+  let y = 0;
+  const f = (size, weight) => {
+    x.font = `${weight || 400} ${size}px ${uwFont(size, 'system-ui,-apple-system,"Segoe UI",sans-serif')}`;
+  };
+  const text = (s, px, py, col) => { if (paint) { x.fillStyle = col; x.fillText(s, px, py); } };
+  const right = on => { if (paint) x.textAlign = on ? "right" : "left"; };
+  const rule = () => {
+    if (paint) {
+      x.strokeStyle = P.line; x.beginPath();
+      x.moveTo(SPAD, y); x.lineTo(SW - SPAD, y); x.stroke();
+    }
+  };
+
+  if (paint) {
+    x.fillStyle = P.bg;
+    x.fillRect(0, 0, SW, H);
+    x.textBaseline = "alphabetic";
+    x.textAlign = "left";
+  }
+
+  /* ---- header: ticker, cap, score --------------------------------- */
+  y = 76;
+  f(58, 700);
+  text(c.ticker, SPAD, y, P.ink1);
+  const tw = x.measureText(c.ticker).width;
+  f(22, 400);
+  text(`${money(c.marketcap)} cap`, SPAD + tw + 18, y - 6, P.ink3);
+
+  // Measure the score, never reserve a guess for it.
+  right(true);
+  f(70, 700);
+  const sc = Number(c.score || 0).toFixed(0);
+  text(sc, SW - SPAD, y + 2, P.ink1);
+  f(20, 400);
+  text("/ 100", SW - SPAD, y + 28, P.ink3);
+  right(false);
+
+  y += 34;
+  f(23, 400);
+  const sub = [c.full_name, c.sector].filter(Boolean).join("  ·  ");
+  fitText(x, sub, SPAD, y, SW - SPAD - 200, P.ink2, paint);
+
+  /* ---- the headline counts ---------------------------------------- */
+  y += 52;
+  const nb = c.n_buyers || 0, nn = c.n_new || 0;
+  f(34, 700);
+  text(String(nb), SPAD, y, P.s1);
+  const nw = x.measureText(String(nb)).width;
+  f(24, 400);
+  let cx = SPAD + nw + 10;
+  text(`small fund${nb === 1 ? "" : "s"} buying`, cx, y, P.ink2);
+  cx += x.measureText(`small fund${nb === 1 ? "" : "s"} buying`).width + 26;
+  if (nn) {
+    f(34, 700);
+    text(String(nn), cx, y, P.s3);
+    const nnw = x.measureText(String(nn)).width;
+    f(24, 400);
+    text("brand new", cx + nnw + 10, y, P.ink2);
+  }
+  right(true);
+  f(26, 600);
+  text(money(c.buy_value), SW - SPAD, y - 14, P.ink1);
+  f(19, 400);
+  text("held between them", SW - SPAD, y + 10, P.ink3);
+  right(false);
+
+  y += 26;
+  rule();
+  y += 44;
+
+  /* ---- who is buying ----------------------------------------------
+     In the no-names variant a fund is described by its size and how many
+     positions it holds, which is the part that carries the signal anyway:
+     a 37-name, $2.5B book putting 8% into something says more than its
+     name does. */
+  f(24, 600);
+  text(full ? "WHO IS BUYING" : "WHO IS BUYING (ANONYMISED)", SPAD, y, P.ink3);
+  right(true);
+  f(22, 400);
+  text("position  ·  % of book", SW - SPAD, y, P.ink3);
+  right(false);
+  y += 38;
+
+  const buyers = (c.buyers || []).slice(0, rows);
+  buyers.forEach((b, i) => {
+    const kindCol = b.kind === "NEW" ? P.s3 : P.s1;
+    // kind pill
+    if (paint) {
+      x.fillStyle = kindCol;
+      roundRect(x, SPAD, y - 17, b.kind === "NEW" ? 62 : 56, 24, 6);
+      x.fill();
+      x.fillStyle = P.bg;
+      f(15, 700);
+      x.fillText(b.kind, SPAD + 9, y);
+    }
+    f(23, 500);
+    const label = full
+      ? fundLabel(b.fund || b.fund_name || "")
+      : `${money(b.fund_aum)} fund`;
+    const labelX = SPAD + 76;
+    const valTxt = money(b.value);
+    const wtTxt = b.weight != null ? (b.weight * 100).toFixed(1) + "%" : "—";
+    // reserve exactly what the right-hand columns measure, no guessing
+    f(23, 500);
+    const valW = x.measureText(valTxt).width;
+    f(22, 400);
+    const wtW = x.measureText(wtTxt).width;
+    const rightBlock = valW + 24 + Math.max(wtW, 60);
+    f(23, 500);
+    fitText(x, label, labelX, y, SW - SPAD - rightBlock - labelX - 20, P.ink1, paint);
+
+    right(true);
+    f(22, 400);
+    text(wtTxt, SW - SPAD, y, P.ink2);
+    f(23, 500);
+    text(valTxt, SW - SPAD - Math.max(wtW, 60) - 24, y, P.ink1);
+    right(false);
+
+    // second line: what the fund is, and where price sits vs their cost
+    y += 26;
+    f(19, 400);
+    const det = [];
+    if (b.positions) det.push(`${b.positions} names`);
+    if (full && b.fund_aum) det.push(money(b.fund_aum) + " book");
+    if (b.trajectory && b.trajectory !== "unknown") det.push(trajLabel(b.trajectory));
+    if (b.vs_cost != null) {
+      det.push(`now ${pct(b.vs_cost)} vs their average price`);
+    }
+    fitText(x, det.join("  ·  "), labelX, y, SW - SPAD - labelX - 20, P.ink3, paint);
+    y += 34;
+  });
+
+  if (shareState.trimmed > 0 && paint === true) {
+    f(21, 400);
+    text(`+ ${shareState.trimmed} more qualifying fund`
+       + `${shareState.trimmed === 1 ? "" : "s"} not shown`, SPAD + 76, y, P.ink3);
+    y += 30;
+  } else if (shareState.trimmed > 0) {
+    y += 30;
+  }
+
+  /* ---- who is selling, if anyone ----------------------------------- */
+  if (c.n_sellers) {
+    y += 6;
+    f(21, 500);
+    text(`${c.n_sellers} qualifying fund${c.n_sellers === 1 ? "" : "s"} cutting or out`,
+         SPAD, y, P.s2);
+    y += 32;
+  }
+
+  y += 8;
+  rule();
+  y += 42;
+
+  /* ---- the accounts ------------------------------------------------
+     The whole point of this desk is that the company actually earns money,
+     so the numbers go in the image. Printing the derived claim ("profitable
+     3 years running") next to the three figures it came from means a
+     contradiction is obvious to anyone looking. */
+  f(24, 600);
+  text("THE ACCOUNTS", SPAD, y, P.ink3);
+  const years = (c.annual_years || []).slice(0, 4);
+  if (years.length) {
+    right(true);
+    f(22, 400);
+    text(`fiscal years to ${String(years[0].fy_end || "").slice(0, 4)}`,
+         SW - SPAD, y, P.ink3);
+    right(false);
+  }
+  y += 40;
+
+  if (years.length) {
+    const vals = years.map(v => Number(v.net_income) || 0);
+    const maxV = Math.max(1, ...vals.map(Math.abs));
+    const BX = SPAD + 84, BW = SW - SPAD - 230 - BX;
+    years.forEach(yr => {
+      const v = Number(yr.net_income) || 0;
+      f(22, 500);
+      text("FY" + String(yr.year).slice(2), SPAD, y + 5, P.ink2);
+      if (paint) {
+        x.fillStyle = P.grid;
+        roundRect(x, BX, y - 10, BW, 18, 9);
+        x.fill();
+        const w = BW * (Math.abs(v) / maxV);
+        if (w > 2) {
+          x.fillStyle = v >= 0 ? P.s3 : P.bad;
+          roundRect(x, BX, y - 10, w, 18, 9);
+          x.fill();
+        }
+      }
+      right(true);
+      f(23, 500);
+      text(money(v), SW - SPAD, y + 5, v >= 0 ? P.ink1 : P.bad);
+      right(false);
+      y += 36;
+    });
+    y += 6;
+    f(21, 400);
+    const py = c.profitable_years || 0;
+    const claim = py >= 1
+      ? `Net income positive in each of the last ${Math.min(py, 4)} fiscal years.`
+      : "Loss-making in the most recent fiscal year.";
+    const extra = [];
+    if (c.total_assets) extra.push(`${money(c.total_assets)} total assets`);
+    if (c.revenue_latest) extra.push(`${money(c.revenue_latest)} revenue`);
+    y += wrapText(x, claim + (extra.length ? "  " + extra.join("  ·  ") : ""),
+                  SPAD, y, SW - 2 * SPAD, 26, P.ink3, paint) * 26;
+    y += 8;
+  } else {
+    f(22, 400);
+    fitText(x, "No annual statements cached for this name.",
+            SPAD, y, SW - 2 * SPAD, P.ink2, paint);
+    y += 32;
+  }
+
+  /* ---- footer ------------------------------------------------------
+     The quarter and the filing window are ALWAYS on the image. A PNG that
+     outlives the conversation must never read as a live quote. The board's
+     "next wave in N days" countdown is deliberately NOT here: it is true
+     for one day and wrong afterwards. */
+  y += 18;
+  rule();
+  y += 36;
+  f(20, 500);
+  text(uwLabel(SHARE_META.brand), SPAD, y, P.ink2);
+  const bw = x.measureText(uwLabel(SHARE_META.brand)).width;
+  if (SHARE_META.site) {
+    f(20, 400);
+    text(SHARE_META.site, SPAD + bw + 14, y, P.ink3);
+  }
+  right(true);
+  f(20, 400);
+  const stamp = new Date().toLocaleDateString(undefined,
+    { year: "numeric", month: "short", day: "numeric" });
+  text(stamp, SW - SPAD, y, P.ink3);
+  right(false);
+  y += 28;
+  f(19, 400);
+  const rd = c.report_date || (S.state && S.state.report_date) || "";
+  y += wrapText(x, `Positions as of the ${rd} 13F, filed up to 45 days after that `
+              + `quarter ended. Quarterly data — not a live read.`,
+                SPAD, y, SW - 2 * SPAD, 25, P.ink3, paint) * 25;
+  y += wrapText(x, "Not investment advice. Market data via Unusual Whales.",
+                SPAD, y, SW - 2 * SPAD, 25, P.ink3, paint) * 25;
+  y += 22;
+  return y;
+}
+
+/* Word-wrap a full sentence to a measured width and return the line count.
+   fitText() is correct for a LABEL -- a truncated fund name is still readable.
+   It is wrong for a sentence: the first render ellipsised
+   "Quarterly data - not a live read" and "$362M revenue", which are the two
+   claims the image exists to make. Sentences wrap; labels ellipsise. */
+function wrapText(x, s, px, py, maxW, lh, col, paint) {
+  const words = String(s == null ? "" : s).split(/\s+/).filter(Boolean);
+  let line = "", n = 0;
+  const flush = () => {
+    if (!line) return;
+    if (paint) { x.fillStyle = col; x.fillText(line, px, py + n * lh); }
+    n += 1; line = "";
+  };
+  words.forEach(w => {
+    const probe = line ? line + " " + w : w;
+    if (line && x.measureText(probe).width > maxW) { flush(); line = w; }
+    else line = probe;
+  });
+  flush();
+  return n;
+}
+
+/* Draw text guaranteed to fit a given width, ellipsising rather than running
+   off the canvas edge. Every long LABEL in this renderer goes through it. */
+function fitText(x, s, px, py, maxW, col, paint) {
+  let t = String(s == null ? "" : s);
+  if (x.measureText(t).width > maxW) {
+    while (t.length > 4 && x.measureText(t + "…").width > maxW) t = t.slice(0, -1);
+    t += "…";
+  }
+  if (paint) { x.fillStyle = col; x.fillText(t, px, py); }
+  return x.measureText(t).width;
+}
+
+function roundRect(x, px, py, w, h, r) {
+  r = Math.min(r, h / 2, w / 2);
+  x.beginPath();
+  x.moveTo(px + r, py);
+  x.lineTo(px + w - r, py); x.quadraticCurveTo(px + w, py, px + w, py + r);
+  x.lineTo(px + w, py + h - r); x.quadraticCurveTo(px + w, py + h, px + w - r, py + h);
+  x.lineTo(px + r, py + h); x.quadraticCurveTo(px, py + h, px, py + h - r);
+  x.lineTo(px, py + r); x.quadraticCurveTo(px, py, px + r, py);
+  x.closePath();
+}
+
+/* A build stamp, sitting under the board footer.
+
+   The Insider Desk shipped its Share button and it was reported missing; the
+   file on the PC was correct and the browser tab simply predated the deploy.
+   There was no way to tell a stale tab from a failed deploy by looking. This
+   is baked into the file at inject time, so an old tab -- or a second copy
+   running out of an older extracted zip -- shows an older stamp and the
+   question answers itself. */
+(function buildStamp() {
+  const foot = $("foot");
+  if (!foot || !SHARE_META.build) return;
+  const el = document.createElement("div");
+  el.style.cssText = "margin-top:10px;font-size:11px;color:var(--ink-3)";
+  el.textContent = "Board UI build " + SHARE_META.build +
+    " · share card v1 · hard-reload if this looks older than you expect";
+  foot.parentNode.insertBefore(el, foot.nextSibling);
+})();
+
+/* ------------------------------------------------------- share controls */
+document.querySelectorAll("#share-detail button").forEach(b =>
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#share-detail button").forEach(n => n.classList.remove("on"));
+    b.classList.add("on");
+    shareState.detail = b.getAttribute("data-detail");
+    drawShare();
+  }));
+document.querySelectorAll("#share-theme button").forEach(b =>
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#share-theme button").forEach(n => n.classList.remove("on"));
+    b.classList.add("on");
+    shareState.theme = b.getAttribute("data-stheme");
+    drawShare();
+  }));
+$("share-close").addEventListener("click", closeShare);
+document.addEventListener("keydown", e => {
+  // Registered after the board's own Escape handler, and only acts when the
+  // share panel is actually open, so the two do not fight over the key.
+  if (e.key === "Escape" && $("share-modal").classList.contains("open")) {
+    e.stopPropagation();
+    closeShare();
+  }
+}, true);
+$("share-modal").addEventListener("click", e => {
+  if (e.target === $("share-modal")) closeShare();
+});
+$("share-dl").addEventListener("click", () => {
+  const c = shareCard();
+  if (!c) return;
+  const a = document.createElement("a");
+  a.download = `${c.ticker}-institutional-${Number(c.score || 0).toFixed(0)}.png`;
+  a.href = $("share-canvas").toDataURL("image/png");
+  a.click();
+});
+$("share-copy").addEventListener("click", async () => {
+  try {
+    const blob = await new Promise(r => $("share-canvas").toBlob(r, "image/png"));
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    $("share-copy").textContent = "Copied";
+    setTimeout(() => { $("share-copy").textContent = "Copy image"; }, 1400);
+  } catch (err) {
+    $("share-hint").textContent = "Copy failed: " + err.message + " — use Download PNG.";
+  }
+});
+$("share-copy-caption").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("share-caption").value);
+    $("share-copy-caption").textContent = "Copied";
+    setTimeout(() => { $("share-copy-caption").textContent = "Copy caption"; }, 1400);
+  } catch (err) { /* clipboard denied; the textarea is selectable anyway */ }
+});
+/* SHARE-CARD-JS-END */
+
+loadAll().then(() => poll()).catch((e) => {
+  $("main").innerHTML = emptyBox("Cannot reach the local server", esc(e.message));
+});
+</script>
+</body>
+</html>

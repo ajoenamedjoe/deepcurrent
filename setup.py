@@ -44,15 +44,17 @@ def main(argv=None, ask=None):
         folder = os.path.join(HERE, desk)
         example = os.path.join(folder, ".env.example")
         target = os.path.join(folder, ".env")
-        if not os.path.isfile(example):
+        if not os.path.isdir(folder):
             continue
         if os.path.isfile(target) and not overwrite:
             with open(target, encoding="utf-8-sig") as fh:
                 text = fh.read()
             text = fill(text, token)            # replaces the token line, or adds one if there was none
-        else:
+        elif os.path.isfile(example):
             with open(example, encoding="utf-8-sig") as fh:
                 text = fill(fh.read(), token)
+        else:                                   # no template (a web upload drops dot-files): token only
+            text = fill("# Written by setup.py. Every other setting uses its default.", token)
         with open(target, "w", encoding="utf-8") as fh:
             fh.write(text)
         if os.name == "posix":

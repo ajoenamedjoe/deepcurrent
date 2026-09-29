@@ -110,6 +110,8 @@ class FixedInjections(unittest.TestCase):
 
 class Gitignore(unittest.TestCase):
     def test_runtime_files_are_ignored(self):
+        if not os.path.isfile(os.path.join(HERE, ".gitignore")):
+            self.skipTest("no .gitignore in this copy (GitHub's web upload leaves out dot-files)")
         with open(os.path.join(HERE, ".gitignore"), encoding="utf-8") as fh:
             gi = fh.read()
         for pat in ("*.db-*", ".env.*", "!.env.example", "backups/", "board.min.json", "flow-board.html", ".vscode/", ".idea/"):

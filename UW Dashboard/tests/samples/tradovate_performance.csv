@@ -1,0 +1,4 @@
+symbol,_priceFormat,_priceFormatType,_tickSize,buyFillId,sellFillId,qty,buyPrice,sellPrice,pnl,boughtTimestamp,soldTimestamp,duration
+MNQZ6,-2,0,0.25,601,602,2,21000.00,21012.50,$50.00,09/15/2026 10:02:11,09/15/2026 10:30:05,27min 54sec
+MESZ6,-2,0,0.25,604,603,1,6004.00,6000.25,$(18.75),09/14/2026 09:48:40,09/14/2026 09:31:02,17min 38sec
+ABCZ6,-2,0,0.25,606,605,1,100.00,101.00,$30.00,09/16/2026 11:20:00,09/16/2026 11:00:00,20min

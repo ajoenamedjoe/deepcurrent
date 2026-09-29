@@ -257,6 +257,8 @@ class Files(unittest.TestCase):
 
     def test_shipped_env_example_parses(self):
         import uw
+        if not os.path.isfile(os.path.join(ROOT, ".env.example")):
+            self.skipTest(".env.example not in this copy (GitHub's web upload leaves out dot-files)")
         env = uw._parse_env_file(os.path.join(ROOT, ".env.example"))
         self.assertEqual(env.get("GDESK_PORT"), "8760")
 

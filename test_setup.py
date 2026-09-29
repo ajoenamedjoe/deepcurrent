@@ -40,6 +40,8 @@ class Repo(unittest.TestCase):
 
     def test_env_examples_ship_no_webhook_and_say_private_channel(self):
         for d in setup.DESKS + ["UW Dashboard"]:
+            if not os.path.isfile(os.path.join(HERE, d, ".env.example")):
+                continue                   # a web-uploaded copy has no dot-files
             with open(os.path.join(HERE, d, ".env.example"), encoding="utf-8") as fh:
                 text = fh.read()
             for m in re.finditer(r"^\s*(\w*WEBHOOK\w*)\s*=(.*)$", text, re.M):
@@ -48,6 +50,8 @@ class Repo(unittest.TestCase):
                 self.assertIn("Private channel only", text, d)
 
     def test_every_desk_has_an_env_example_and_gitignore_covers_env(self):
+        if not os.path.isfile(os.path.join(HERE, ".gitignore")):
+            self.skipTest("no .gitignore in this copy (GitHub's web upload leaves out dot-files)")
         for d in setup.DESKS + ["UW Dashboard"]:
             self.assertTrue(os.path.isfile(os.path.join(HERE, d, ".env.example")), d)
         with open(os.path.join(HERE, ".gitignore")) as fh:
@@ -58,6 +62,8 @@ class Repo(unittest.TestCase):
     def test_git_would_not_commit_env_or_databases(self):
         if not shutil.which("git"):
             self.skipTest("git not installed")
+        if not os.path.isfile(os.path.join(HERE, ".gitignore")):
+            self.skipTest("no .gitignore in this copy (GitHub's web upload leaves out dot-files)")
         d = tempfile.mkdtemp()
         shutil.copy(os.path.join(HERE, ".gitignore"), d)
         os.makedirs(os.path.join(d, "Swing Desk"))
