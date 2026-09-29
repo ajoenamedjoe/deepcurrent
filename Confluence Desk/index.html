@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confluence Desk</title>
+<style>
+/* ---------------------------------------------------------------- tokens
+   Same validated palette as Swing Desk, Institutional Desk and GEX ES Desk,
+   verbatim, so all the desks read as one system.
+   Validated: light on #fcfcfb -- all PASS with the usual contrast WARN on
+   green/yellow/pink, relieved by the permanent legend and the numeric
+   readout printed on every single bar. Dark on #1a1a19 -- all PASS. */
+:root {
+  color-scheme: light;
+  --surface-1: #fcfcfb; --surface-2: #f4f4f1; --page: #f9f9f7;
+  --ink-1: #0b0b0b; --ink-2: #52514e; --ink-3: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10); --border-strong: rgba(11,11,11,0.18);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(11,11,11,.06), 0 4px 12px rgba(11,11,11,.04);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19; --surface-2: #232322; --page: #0d0d0d;
+  --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-3: #898781;
+  --grid: #2c2c2a; --axis: #383835;
+  --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.18);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--page); color:var(--ink-1);
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased; }
+.wrap { max-width:1340px; margin:0 auto; padding:20px 20px 80px; }
+h1,h2,h3 { margin:0; font-weight:600; letter-spacing:-0.01em; }
+.mono { font-variant-numeric: tabular-nums; }
+a { color: var(--s1); }
+
+header { position:sticky; top:0; z-index:40;
+  background:color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter:blur(12px); border-bottom:1px solid var(--border);
+  margin:-20px -20px 18px; padding:13px 20px; }
+.hdr-top { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.hdr-top h1 { font-size:17px; }
+.sub { color:var(--ink-2); font-size:12.5px; }
+.spacer { flex:1; }
+button, select, input[type=search] { font:inherit; color:var(--ink-1);
+  background:var(--surface-1); border:1px solid var(--border-strong);
+  border-radius:7px; padding:5px 11px; cursor:pointer; }
+button:hover:not(:disabled) { background:var(--surface-2); }
+button:disabled { opacity:.5; cursor:default; }
+button.on { background:var(--ink-1); color:var(--page); border-color:var(--ink-1); }
+.controls { display:flex; gap:7px; flex-wrap:wrap; align-items:center;
+  margin-top:11px; }
+.controls .lbl { font-size:12px; color:var(--ink-3); margin-right:2px; }
+
+/* ------------------------------------------------------------- banners */
+.banner { border:1px solid var(--border-strong); border-radius:9px;
+  padding:11px 14px; margin-bottom:14px; font-size:13px; display:flex;
+  gap:10px; align-items:flex-start; }
+.banner .ico { font-weight:700; flex:none; }
+.banner.warn { border-color:var(--warning); background:color-mix(in srgb,var(--warning) 9%, var(--surface-1)); }
+.banner.err { border-color:var(--critical); background:color-mix(in srgb,var(--critical) 9%, var(--surface-1)); }
+.banner.info { background:var(--surface-1); }
+
+/* --------------------------------------------------------------- strip */
+.strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px; margin-bottom:18px; }
+.tile { background:var(--surface-1); border:1px solid var(--border);
+  border-radius:10px; padding:11px 13px; box-shadow:var(--shadow); }
+.tile .k { font-size:11.5px; color:var(--ink-3); text-transform:uppercase;
+  letter-spacing:.04em; }
+.tile .v { font-size:21px; font-weight:600; margin-top:2px; }
+.tile .n { font-size:11.5px; color:var(--ink-2); margin-top:1px; }
+
+/* --------------------------------------------------------------- cards */
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(390px,1fr));
+  gap:14px; align-items:start; }
+.card { background:var(--surface-1); border:1px solid var(--border);
+  border-radius:12px; box-shadow:var(--shadow); overflow:hidden; }
+.card.hi { border-color:color-mix(in srgb,var(--s3) 55%, var(--border)); }
+.card-top { display:flex; gap:12px; padding:13px 14px 10px; align-items:flex-start; }
+.tk { font-size:19px; font-weight:650; letter-spacing:-.02em; }
+.tk-sub { font-size:11.5px; color:var(--ink-3); margin-top:1px; }
+.score-box { margin-left:auto; text-align:right; flex:none; }
+.score-n { font-size:27px; font-weight:680; line-height:1; }
+.score-of { font-size:11px; color:var(--ink-3); }
+.band { display:inline-block; font-size:10.5px; font-weight:600; padding:1px 7px;
+  border-radius:20px; text-transform:uppercase; letter-spacing:.05em;
+  border:1px solid currentColor; margin-top:4px; }
+.band.high { color:var(--s3); } .band.elevated { color:var(--s4); }
+.band.watch { color:var(--s1); } .band.low { color:var(--ink-3); }
+
+.badges { display:flex; gap:5px; flex-wrap:wrap; padding:0 14px 9px; }
+.badge { font-size:10.5px; padding:1px 7px; border-radius:20px;
+  border:1px solid var(--border-strong); color:var(--ink-2); }
+.badge.new { border-color:var(--s3); color:var(--s3); }
+.badge.three { border-color:var(--s3); color:var(--s3); font-weight:600; }
+.badge.flag { border-color:var(--serious); color:var(--serious); }
+
+/* contribution bars: 3 series, legend always present, and EVERY bar carries
+   its own numeric readout -- which is also the relief for the light-mode
+   contrast WARN on the green slot. */
+.legs { padding:2px 14px 11px; }
+.leg { display:grid; grid-template-columns:92px 1fr 62px; gap:9px;
+  align-items:center; margin-bottom:5px; }
+.leg-name { font-size:11.5px; color:var(--ink-2); }
+.leg-track { height:9px; background:var(--grid); border-radius:5px;
+  position:relative; overflow:hidden; }
+.leg-fill { position:absolute; inset:0 auto 0 0; border-radius:5px; }
+.leg-fill.insider { background:var(--s1); }
+.leg-fill.darkpool { background:var(--s2); }
+.leg-fill.institutional { background:var(--s3); }
+.leg-val { font-size:11.5px; color:var(--ink-1); text-align:right; }
+.leg.unmeasured .leg-val { color:var(--ink-3); font-style:italic; }
+.leg-note { grid-column:2/4; font-size:11px; color:var(--ink-3); margin:-3px 0 4px; }
+
+.sect { border-top:1px solid var(--border); padding:10px 14px; }
+.sect h4 { margin:0 0 7px; font-size:11.5px; text-transform:uppercase;
+  letter-spacing:.05em; color:var(--ink-3); font-weight:600;
+  display:flex; align-items:center; gap:7px; }
+.sect h4 .asof { text-transform:none; letter-spacing:0; color:var(--ink-3);
+  font-weight:400; margin-left:auto; font-size:11px; }
+.kv { display:flex; flex-wrap:wrap; gap:3px 16px; font-size:12.5px;
+  color:var(--ink-2); }
+.kv b { color:var(--ink-1); font-weight:600; }
+.people { margin-top:7px; font-size:12.5px; }
+.person { display:grid; grid-template-columns:1fr auto; gap:4px 10px;
+  padding:5px 0; border-top:1px dashed var(--border); }
+.person:first-child { border-top:0; }
+.person .nm { font-weight:600; }
+/* The RAW officer_title sits right beside the parsed seniority label. Putting
+   a derived value next to its source is a free correctness check -- this is
+   exactly how the vice-president/president bug was caught on the Insider
+   Desk, by a card reading "President" beside a raw title of "Vice-President". */
+.person .ttl { color:var(--ink-3); font-size:11.5px; }
+.person .amt { text-align:right; }
+.person .stk { text-align:right; font-size:11.5px; color:var(--ink-2); }
+
+.sessions { display:flex; gap:3px; align-items:flex-end; height:34px;
+  margin:8px 0 4px; }
+.sess { flex:1; min-width:5px; background:var(--grid); border-radius:3px 3px 0 0;
+  position:relative; }
+.sess.active { background:var(--s2); }
+.sess-axis { display:flex; justify-content:space-between; gap:10px;
+  font-size:10.5px; color:var(--ink-3); }
+.sess-axis span:nth-child(2) { text-align:center; }
+.sess-note { font-size:10.5px; color:var(--ink-3); margin-top:2px; }
+.prints { margin-top:7px; font-size:12px; }
+.print { display:grid; grid-template-columns:64px 1fr auto; gap:8px;
+  padding:3px 0; color:var(--ink-2); border-top:1px dashed var(--border); }
+.print:first-child { border-top:0; }
+.print .pm { color:var(--ink-1); text-align:right; }
+.funds { margin-top:6px; font-size:12.5px; }
+.fund { display:grid; grid-template-columns:1fr auto; gap:10px; padding:3px 0;
+  border-top:1px dashed var(--border); color:var(--ink-2); }
+.fund:first-child { border-top:0; }
+.fund b { color:var(--ink-1); font-weight:600; }
+.traj { font-size:10.5px; padding:0 6px; border-radius:20px;
+  border:1px solid var(--border-strong); }
+
+.card-foot { border-top:1px solid var(--border); padding:9px 14px;
+  display:flex; gap:8px; align-items:center; }
+.card-foot .why { font-size:11.5px; color:var(--ink-3); flex:1; }
+.empty { text-align:center; padding:60px 20px; color:var(--ink-3); }
+
+/* --------------------------------------------------------- share panel */
+.modal { position:fixed; inset:0; z-index:100; display:none;
+  background:rgba(0,0,0,.55); padding:20px; overflow:auto; }
+.modal.open { display:block; }
+.sheet { max-width:980px; margin:0 auto; background:var(--page);
+  border:1px solid var(--border-strong); border-radius:14px; overflow:hidden; }
+.sheet-top { display:flex; gap:10px; align-items:center; padding:13px 16px;
+  border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.sheet-body { display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:18px;
+  padding:16px; }
+@media (max-width:820px) { .sheet-body { grid-template-columns:1fr; } }
+#shareCanvas { width:100%; height:auto; border:1px solid var(--border);
+  border-radius:10px; background:var(--surface-2); }
+.share-side label { display:block; font-size:11.5px; color:var(--ink-3);
+  text-transform:uppercase; letter-spacing:.04em; margin:12px 0 5px; }
+.share-side textarea { width:100%; min-height:150px; font:13px/1.5 inherit;
+  color:var(--ink-1); background:var(--surface-1);
+  border:1px solid var(--border-strong); border-radius:8px; padding:9px; resize:vertical; }
+.hint { font-size:11.5px; color:var(--ink-3); margin-top:7px; }
+.seg { display:inline-flex; border:1px solid var(--border-strong);
+  border-radius:7px; overflow:hidden; }
+.seg button { border:0; border-radius:0; padding:5px 11px; }
+.seg button + button { border-left:1px solid var(--border-strong); }
+
+footer { margin-top:34px; padding-top:14px; border-top:1px solid var(--border);
+  font-size:11.5px; color:var(--ink-3); line-height:1.8; }
+@media (max-width:520px) {
+  .grid { grid-template-columns:1fr; }
+  .leg { grid-template-columns:78px 1fr 56px; }
+}
+</style>
+<script src="http://127.0.0.1:8700/theme.js?desk=confluence"></script>
+</head>
+<body data-palette="#2a78d6,#eb6834,#1baf7a,#eda100,#e87ba4">
+<div class="wrap">
+
+<header>
+  <div class="hdr-top">
+    <h1 data-uw-name>Confluence Desk</h1>
+    <span class="sub" id="subtitle">loading…</span>
+    <span class="spacer"></span>
+    <button id="themeBtn" title="Toggle light / dark">Light</button>
+    <button id="refreshBtn">Refresh</button>
+  </div>
+  <div class="controls">
+    <span class="lbl">Show</span>
+    <div class="seg" id="filterSeg">
+      <button data-filter="all" class="on">All</button>
+      <button data-filter="three">All three legs</button>
+      <button data-filter="high">70+</button>
+      <button data-filter="new">New filings</button>
+    </div>
+    <span class="lbl" style="margin-left:8px">Sort</span>
+    <select id="sortSel">
+      <option value="score">Score</option>
+      <option value="insider">Insider leg</option>
+      <option value="darkpool">Dark pool leg</option>
+      <option value="institutional">13F leg</option>
+      <option value="notional">Insider $</option>
+      <option value="recent">Most recent buy</option>
+    </select>
+    <input type="search" id="searchBox" placeholder="ticker…" style="width:120px">
+    <span class="spacer"></span>
+    <span class="sub mono" id="count"></span>
+  </div>
+</header>
+
+<div id="banners"></div>
+<div class="strip" id="strip"></div>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" style="display:none"></div>
+
+<footer id="footer"></footer>
+</div>
+
+<!-- ------------------------------------------------------- share panel -->
+<div class="modal" id="shareModal">
+  <div class="sheet">
+    <div class="sheet-top">
+      <strong id="shareTitle">Share card</strong>
+      <span class="spacer"></span>
+      <div class="seg" id="detailSeg">
+        <button data-detail="full" class="on">Detailed</button>
+        <button data-detail="nonames">No names</button>
+      </div>
+      <div class="seg" id="shareThemeSeg">
+        <button data-stheme="dark" class="on">Dark</button>
+        <button data-stheme="light">Light</button>
+      </div>
+      <button id="copyBtn">Copy image</button>
+      <button id="dlBtn">Download PNG</button>
+      <button id="closeShare">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div><canvas id="shareCanvas" width="1080" height="1400"></canvas></div>
+      <div class="share-side">
+        <label>Caption (never baked into the image)</label>
+        <textarea id="captionBox"></textarea>
+        <button id="copyCaption" style="margin-top:8px">Copy caption</button>
+        <div class="hint" id="shareHint"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const state = { board:null, filter:"all", sort:"score", q:"",
+                share:{ card:null, detail:"full", theme:"dark" } };
+
+/* ------------------------------------------------------------ formatting */
+function money(v){ v = Number(v||0);
+  const a = Math.abs(v);
+  if (a >= 1e9) return (v/1e9).toFixed(1)+"B";
+  if (a >= 1e6) return (v/1e6).toFixed(1)+"M";
+  if (a >= 1e3) return (v/1e3).toFixed(0)+"K";
+  return v.toFixed(0);
+}
+const $m = v => "$"+money(v);
+function pct(v, d){ return (v==null||isNaN(v)) ? "—" : (v>=0?"+":"")+Number(v).toFixed(d==null?1:d)+"%"; }
+function dshort(iso){ if(!iso) return "—";
+  const d = new Date(iso+"T00:00:00");
+  return isNaN(d) ? String(iso) : d.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
+/* The true stake growth, never reconstructed from the clamped score. */
+function stakeLabel(p){
+  if (p.new_stake) return "new stake";
+  const v = p.stake_pct;
+  if (v == null) return "";
+  if (v >= 1000) return "stake +" + (Math.round(v/100)/10) + "x";
+  if (v < 10) return "stake +" + v.toFixed(1) + "%";
+  return "stake +" + Math.round(v) + "%";
+}
+function trajLabel(t){ return String(t||"").replace(/_/g," "); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+const LEG_NAME = { insider:"Insider buying", darkpool:"Dark pool", institutional:"Institutional 13F" };
+const LEG_SHORT = { insider:"Insider", darkpool:"Dark pool", institutional:"13F" };
+
+/* ---------------------------------------------------------------- fetch */
+async function load(){
+  try {
+    const res = await fetch("/api/board", {cache:"no-store"});
+    const data = await res.json();
+    state.board = data;
+    render();
+  } catch (err) {
+    $("#banners").innerHTML = banner("err","!","Cannot reach the desk server. "
+      + "Is the window that START_HERE.bat opened still running?");
+  }
+}
+
+function banner(kind, ico, html){
+  return `<div class="banner ${kind}"><span class="ico">${ico}</span><div>${html}</div></div>`;
+}
+
+/* --------------------------------------------------------------- render */
+function render(){
+  const b = state.board;
+  if (!b) return;
+  if (b.pending){
+    $("#subtitle").textContent = "first scan running…";
+    $("#grid").innerHTML = "";
+    $("#empty").style.display = "block";
+    $("#empty").textContent = b.message || "Scanning…";
+    return;
+  }
+
+  /* -------- banners */
+  let bn = "";
+  if (b.error){
+    bn += banner("err","!", "<b>Last scan failed:</b> "+esc(b.error)
+      + "<br>The board below is the last good one. It is not live.");
+  }
+  if (b.baseline){
+    bn += banner("info","i", "<b>First run.</b> This scan recorded the baseline "
+      + "and posted nothing to Discord — otherwise every filing in the "
+      + b.config.window_days + "-day window would have paged you at once. "
+      + "Alerts begin on the next scan.");
+  }
+  const inst = b.institutional || {};
+  if (!inst.available){
+    bn += banner("warn","!", "<b>No 13F backdrop.</b> "+esc(inst.error||"")
+      + "<br>Cards still work — they just cap at 75 without the institutional leg.");
+  } else {
+    bn += banner("info","i", "<b>13F leg is quarterly data.</b> Latest filings cover the "
+      + "quarter ended <b>"+esc(inst.report_date)+"</b>, filed around <b>"
+      + esc(inst.filed_around)+"</b> — about "+(inst.age_days||"?")+" days ago. "
+      + "The insider and dark pool legs are current; this one is a backdrop, "
+      + "not a live read. Next 13F wave lands mid-November.");
+  }
+  $("#banners").innerHTML = bn;
+
+  /* -------- strip */
+  const cards = b.cards || [];
+  const three = cards.filter(c => c.all_three).length;
+  const best = cards.length ? cards[0].score : 0;
+  $("#strip").innerHTML = [
+    tile("Cards", cards.length, cards.length ? "score ≥ "+b.config.min_score : "—"),
+    tile("All three legs", three, "insider + dark pool + 13F"),
+    tile("Top score", best.toFixed(0), "of 100 · practical ceiling ≈ 77"),
+    tile("13F universe", (inst.tickers||0), (inst.funds||0)+" small funds, "+esc(inst.report_date||"—")),
+    tile("API calls", b.api_calls, b.seconds+"s last scan"),
+  ].join("");
+
+  /* -------- cards */
+  let shown = cards.slice();
+  if (state.filter === "three") shown = shown.filter(c => c.all_three);
+  if (state.filter === "high")  shown = shown.filter(c => c.score >= 70);
+  if (state.filter === "new")   shown = shown.filter(c => c.has_new_filing);
+  if (state.q) shown = shown.filter(c => c.ticker.includes(state.q.toUpperCase()));
+
+  const S = state.sort;
+  shown.sort((x,y) => {
+    if (S === "score") return y.score - x.score;
+    if (S === "notional") return y.notional - x.notional;
+    if (S === "recent") return String(y.last_date||"").localeCompare(String(x.last_date||""));
+    return y.legs[S].points - x.legs[S].points;
+  });
+
+  $("#count").textContent = shown.length + " of " + cards.length;
+  $("#grid").innerHTML = shown.map(cardHTML).join("");
+  $("#empty").style.display = shown.length ? "none" : "block";
+  $("#empty").textContent = cards.length
+    ? "No cards match that filter."
+    : "No company cleared the floor in this window.";
+
+  $("#subtitle").textContent = cards.length + " cards · "
+    + b.config.window_days + "-day insider window · scanned "
+    + new Date(b.generated_at).toLocaleTimeString();
+
+  const bd = b.build || {};
+  $("#footer").innerHTML =
+    "<b>Scoring.</b> Insider 45 + dark pool 30 + 13F 25 = 100. A card with no "
+    + "13F coverage caps at 75 by construction — the 13F leg is a backdrop, not "
+    + "a gate. In practice nothing reaches 100: every component would have to max "
+    + "at once, and the highest score this desk has recorded so far is <b>"
+    + (b.best_ever!=null ? Number(b.best_ever).toFixed(0) : best.toFixed(0))
+    + "</b>. Read the score against that, not against 100.<br>"
+    + "<b>Not scored, on purpose.</b> “Now below what the insider paid” is on "
+    + "every card because it is useful, but scoring it would rank falling knives "
+    + "to the top. The 13F filing date is shown and carries no points.<br>"
+    + "<b>Weights are reasoned, not fitted.</b> Every card’s components are written "
+    + "to <code>confluence.db</code> on every scan, before any outcome exists — "
+    + (b.distinct_days||0) + " distinct day"+((b.distinct_days===1)?"":"s")
+    + " of tape so far (days, not rows: a thousand scans in one afternoon is still "
+    + "one day of evidence). Insider and 13F signal plays out over months, so this "
+    + "needs a quarter before it can say anything.<br>"
+    + "<b>Build.</b> index.html " + esc(bd.index_mtime||"?") + " · served from "
+    + "<code>" + esc(bd.folder||"?") + "</code> · port " + esc(bd.port||"?")
+    + " — if this timestamp is older than a deploy you just did, the tab is stale; hard-reload.";
+}
+
+function tile(k,v,n){
+  return `<div class="tile"><div class="k">${esc(k)}</div>
+    <div class="v mono">${esc(v)}</div><div class="n">${esc(n)}</div></div>`;
+}
+
+function legRow(c, name){
+  const leg = c.legs[name];
+  const w = leg.max ? Math.max(0, Math.min(100, 100*leg.points/leg.max)) : 0;
+  const un = !leg.measured;
+  let note = "";
+  if (name === "institutional" && un)
+    note = `<div class="leg-note">not in the 13F small-fund universe — no data, not a zero reading</div>`;
+  if (name === "darkpool" && c.dark && c.dark.print_count === 0)
+    note = `<div class="leg-note">no off-exchange prints above $${money(state.board.config.min_print_premium)} in the window</div>`;
+  else if (name === "darkpool" && c.dark && !(c.dark.testable_days||[]).length)
+    note = `<div class="leg-note">proximity unscored — no insider buy falls inside the ${c.dark.window_sessions}-session dark pool window</div>`;
+  return `<div class="leg${un?" unmeasured":""}">
+      <span class="leg-name">${LEG_NAME[name]}</span>
+      <span class="leg-track"><span class="leg-fill ${name}" style="width:${w.toFixed(1)}%"></span></span>
+      <span class="leg-val mono">${un?"no data":leg.points.toFixed(1)+" / "+leg.max}</span>
+    </div>${note}`;
+}
+
+function cardHTML(c){
+  const dk = c.dark || {};
+  const inst = c.inst;
+  const tb = c.top_buyer || {};
+
+  const badges = [];
+  if (c.all_three) badges.push(`<span class="badge three">all three legs</span>`);
+  if (c.has_new_filing) badges.push(`<span class="badge new">new filing</span>`);
+  if (c.distinct_buyers > 1) badges.push(`<span class="badge">${c.distinct_buyers} buyers</span>`);
+  if (c.sector) badges.push(`<span class="badge">${esc(c.sector)}</span>`);
+  if (c.frac_10b5_1 > 0) badges.push(`<span class="badge flag">${Math.round(100*c.frac_10b5_1)}% 10b5-1</span>`);
+  if (c.frac_corporate > 0) badges.push(`<span class="badge flag">corporate filer</span>`);
+  if ((c.price_flags||[]).includes("suspect"))
+    badges.push(`<span class="badge flag">fill price corrected</span>`);
+
+  /* sessions: a small multiple of one ticker's own off-exchange volume, on
+     its own scale, labelled with its own tallest value. Never share a scale
+     across cards -- a $10B name would flatten every small cap to a hairline. */
+  const sess = (dk.sessions||[]).slice().reverse();
+  const maxShare = Math.max(0.0001, ...sess.map(s => s.share_of_day||0));
+  const sessBars = sess.map(s => {
+    const h = Math.max(3, Math.round(34 * (s.share_of_day||0) / maxShare));
+    return `<span class="sess${s.active?" active":""}" style="height:${h}px"
+      title="${esc(s.date)}${s.partial?" (still trading)":""} — ${money(s.notional)} over ${s.prints} print${s.prints===1?"":"s"}, ${(100*(s.share_of_day||0)).toFixed(1)}% of that day's volume"></span>`;
+  }).join("");
+  const partialNote = sess.some(s => s.partial)
+    ? `Newest session is still trading, so its share reads high.` : "";
+
+  const people = (c.people||[]).slice(0,4).map(p => `
+    <div class="person">
+      <div><span class="nm">${esc(p.name)}</span>
+        <div class="ttl">${p.title ? esc(p.title) : "no title filed"} · parsed rank ${p.rank}</div></div>
+      <div><div class="amt mono">${$m(p.notional)}</div>
+        <div class="stk mono">${esc(stakeLabel(p))}</div></div>
+    </div>`).join("");
+  const morePeople = (c.people||[]).length > 4
+    ? `<div class="hint">+ ${c.people.length-4} more buyer${c.people.length-4===1?"":"s"}</div>` : "";
+
+  const prints = (dk.top_prints||[]).slice(0,3).map(p => `
+    <div class="print"><span class="mono">${esc(p.date.slice(5))} ${esc(p.time)}</span>
+      <span>${p.size.toLocaleString()} sh @ ${p.price.toFixed(2)}${p.extended?" · ext":""}</span>
+      <span class="pm mono">${$m(p.premium)}</span></div>`).join("");
+
+  const funds = inst ? (inst.funds||[]).slice(0,3).map(f => `
+    <div class="fund"><span><b>${esc(f.fund)}</b>
+      <span class="traj">${esc(trajLabel(f.trajectory)||f.kind)}</span></span>
+      <span class="mono">${$m(f.value)}</span></div>`).join("") : "";
+
+  const lean = (dk.pressure == null)
+    ? `<span title="fewer than 6 clean prints — a stale or wide quote cannot support the inference">lean: not enough clean prints</span>`
+    : `lean: <b>${Math.round(100*dk.ask_share)}%</b> at the offer vs <b>${Math.round(100*dk.bid_share)}%</b> at the bid`;
+
+  return `<article class="card${c.score>=70?" hi":""}">
+    <div class="card-top">
+      <div>
+        <div class="tk">${esc(c.ticker)}</div>
+        <div class="tk-sub">${$m(c.marketcap)} cap${c.quote?" · $"+Number(c.quote).toFixed(2):""}</div>
+      </div>
+      <div class="score-box">
+        <div class="score-n mono">${c.score.toFixed(0)}</div>
+        <div class="score-of">/ 100</div>
+        <div class="band ${c.band}">${c.band}</div>
+      </div>
+    </div>
+    <div class="badges">${badges.join("")}</div>
+    <div class="legs">
+      ${legRow(c,"insider")}${legRow(c,"darkpool")}${legRow(c,"institutional")}
+    </div>
+
+    <div class="sect">
+      <h4>Insider buying<span class="asof">${dshort(c.first_date)} – ${dshort(c.last_date)}</span></h4>
+      <div class="kv">
+        <span><b>${$m(c.notional)}</b> across ${c.filings} filing${c.filings===1?"":"s"}</span>
+        <span>avg fill <b>$${Number(c.avg_price||0).toFixed(2)}</b></span>
+        ${c.vs_fills_pct!=null ? `<span>now <b>${pct(c.vs_fills_pct)}</b> vs fills</span>` : ""}
+      </div>
+      <div class="people">${people}</div>${morePeople}
+    </div>
+
+    <div class="sect">
+      <h4>Dark pool<span class="asof">${dk.window_sessions||0} session${dk.window_sessions===1?"":"s"}</span></h4>
+      ${dk.print_count ? `
+      <div class="kv">
+        <span><b>${$m(dk.window_notional)}</b> off-exchange</span>
+        <span>biggest print <b>${(100*dk.max_size_vs_avg30).toFixed(1)}%</b> of 30-day avg vol</span>
+        <span><b>${dk.active_sessions}</b> active session${dk.active_sessions===1?"":"s"}</span>
+        ${(dk.testable_days||[]).length
+            ? `<span><b>${dk.overlap_days}</b> of ${dk.testable_days.length} insider buy${dk.testable_days.length===1?"":"s"} had blocks nearby</span>`
+            : `<span title="the insider window is ${state.board.config.window_days} days but the dark pool call reaches back about ${dk.window_sessions} sessions">no insider buy falls inside the dark pool window</span>`}
+      </div>
+      <div class="sessions">${sessBars}</div>
+      <div class="sess-axis"><span>${sess.length?esc(sess[0].date.slice(5)):""}</span>
+        <span>${(100*maxShare).toFixed(1)}% of day's volume — tallest bar</span>
+        <span>${sess.length?esc(sess[sess.length-1].date.slice(5)):""}</span></div>
+      ${partialNote ? `<div class="sess-note">${partialNote}</div>` : ""}
+      <div class="kv" style="margin-top:6px">${lean}</div>
+      <div class="prints">${prints}</div>
+      ` : `<div class="kv">No off-exchange prints above $${money(state.board.config.min_print_premium)} in the window.</div>`}
+    </div>
+
+    <div class="sect">
+      <h4>Institutional 13F${inst?`<span class="asof">Q ended ${esc(inst.report_date)}</span>`:""}</h4>
+      ${inst ? `
+      <div class="kv">
+        <span><b>${inst.distinct_funds}</b> fund${inst.distinct_funds===1?"":"s"} buying</span>
+        <span>${inst.new_count} new · ${inst.add_count} added</span>
+        <span><b>${$m(inst.total_value)}</b> held</span>
+        <span>top weight <b>${(100*inst.best_position_weight).toFixed(1)}%</b> of book</span>
+      </div>
+      <div class="funds">${funds}</div>
+      <div class="hint" style="margin-top:5px">Filed around ${esc(inst.filed_around)} — quarterly data, not a live read.</div>
+      ` : `<div class="kv">Not in the small-fund 13F universe this desk tracks
+        ($50M–$2.5B AUM, ≤75 positions, profitable companies). That is missing
+        coverage, not evidence against the name.</div>`}
+    </div>
+
+    <div class="card-foot">
+      <span class="why">Carried by ${c.carried_by.map(n=>LEG_SHORT[n]).join(" + ")}</span>
+      <button class="share-open" data-tk="${esc(c.ticker)}">Share card</button>
+    </div>
+  </article>`;
+}
+
+/* ==================================================== share card (canvas)
+   Drawn on a canvas, not screenshotted from the DOM. Rasterising live HTML
+   needs foreignObject plus inlined fonts and taints the canvas differently
+   in every browser; drawing makes the output deterministic and lets the
+   image carry its own type scale, its own legend and a provenance footer
+   that the on-screen card does not need.
+
+   Two-pass measure-then-draw, because resizing a canvas clears it and the
+   height depends on how much content there is. */
+const SP = {
+  dark:{ bg:"#1a1a19", panel:"#232322", ink1:"#ffffff", ink2:"#c3c2b7",
+         ink3:"#898781", grid:"#2c2c2a", s1:"#3987e5", s2:"#d95926",
+         s3:"#199e70", line:"rgba(255,255,255,.12)" },
+  light:{ bg:"#fcfcfb", panel:"#f4f4f1", ink1:"#0b0b0b", ink2:"#52514e",
+          ink3:"#898781", grid:"#e1e0d9", s1:"#2a78d6", s2:"#eb6834",
+          s3:"#1baf7a", line:"rgba(11,11,11,.12)" },
+};
+const W = 1080, PAD = 64, MAXH = 1400;
+
+/* Share buttons carry the ticker in data-tk and are wired here, never through an inline onclick:
+   an HTML-escaped quote is decoded again inside onclick, so a hostile ticker could break out (2026-09-26). */
+document.addEventListener("click", e => { const b = e.target.closest(".share-open"); if (b) openShare(b.dataset.tk); });
+
+function openShare(ticker){
+  const card = (state.board.cards||[]).find(c => c.ticker === ticker);
+  if (!card) return;
+  state.share.card = card;
+  $("#shareTitle").textContent = "Share " + ticker;
+  $("#shareModal").classList.add("open");
+  $("#captionBox").value = draftCaption(card);
+  drawShare();
+  const ok = typeof ClipboardItem !== "undefined" && navigator.clipboard
+             && navigator.clipboard.write;
+  $("#copyBtn").disabled = !ok;
+  $("#shareHint").textContent = ok
+    ? "Portrait 1080px wide, capped at 1400 tall so it survives a 4:5 crop. "
+      + "The caption is yours to edit and is never drawn into the image."
+    : "This browser has no clipboard image support — use Download PNG. "
+      + "(127.0.0.1 counts as a secure context in Chrome and Edge.)";
+}
+
+function draftCaption(c){
+  const dk = c.dark||{}, inst = c.inst;
+  const lines = [];
+  lines.push(`${c.ticker} — confluence score ${c.score.toFixed(0)}/100.`);
+  lines.push(`${c.distinct_buyers} insider${c.distinct_buyers===1?"":"s"} bought `
+    + `$${money(c.notional)} of stock on the open market between `
+    + `${dshort(c.first_date)} and ${dshort(c.last_date)}.`);
+  if (dk.print_count) lines.push(`$${money(dk.window_notional)} has printed off-exchange `
+    + `across ${dk.active_sessions} active session${dk.active_sessions===1?"":"s"}, `
+    + `the biggest block ${(100*dk.max_size_vs_avg30).toFixed(1)}% of 30-day average volume.`);
+  if (inst) lines.push(`${inst.distinct_funds} small fund${inst.distinct_funds===1?"":"s"} `
+    + `were buying as of the ${inst.report_date} 13F.`);
+  lines.push("");
+  lines.push("Not advice. Form 4 + 13F + off-exchange prints via Unusual Whales.");
+  return lines.join("\n");
+}
+
+/* theme engine (dashboard): card colours and fonts follow the active theme; Paper = unchanged */
+function uwLabel(fb){ return (window.UWBrand && window.UWBrand.label) || fb; }  /* name from the dashboard: "Deep Current · Valuation" */
+function uwPal(base, dark) { return window.UWTheme ? window.UWTheme.pal(base, dark) : base; }
+function uwFont(size, fallback) { return window.UWTheme ? window.UWTheme.font(size >= 40 ? "head" : "body", fallback) : fallback; }
+window.addEventListener("uw-theme", () => { if (state.share.card) drawShare(); });
+
+function drawShare(){
+  const c = state.share.card;
+  if (!c) return;
+  const P = uwPal(SP[state.share.theme], state.share.theme === "dark");
+  const full = state.share.detail === "full";
+  const cv = $("#shareCanvas");
+
+  // pass 1: measure
+  let h = layoutShare(cv.getContext("2d"), c, P, full, false);
+  h = Math.min(MAXH, h);
+  cv.width = W; cv.height = h;                 // resizing CLEARS the canvas
+  layoutShare(cv.getContext("2d"), c, P, full, true, h);
+}
+
+function layoutShare(x, c, P, full, paint, H){
+  const dk = c.dark||{}, inst = c.inst;
+  let y = 0;
+  const f = (size, weight) => { x.font = `${weight||400} ${size}px ${uwFont(size, 'system-ui,-apple-system,"Segoe UI",sans-serif')}`; };
+  const text = (s, px, py, col) => { if (paint){ x.fillStyle = col; x.fillText(s, px, py); } };
+
+  if (paint){ x.fillStyle = P.bg; x.fillRect(0,0,W,H); x.textBaseline = "alphabetic"; }
+
+  y = 74;
+  f(58,700); text(c.ticker, PAD, y, P.ink1);
+  const tw = x.measureText(c.ticker).width;
+  f(22,400);
+  text(`${$m(c.marketcap)} cap`, PAD + tw + 18, y - 6, P.ink3);
+
+  // score, right-aligned. Measure the label instead of reserving a guess --
+  // a guessed reserve is what clipped the footer date to "Sep 1…" last time.
+  if (paint) x.textAlign = "right";
+  f(72,700); text(c.score.toFixed(0), W-PAD, y+4, P.ink1);
+  const sw = x.measureText(c.score.toFixed(0)).width;
+  f(20,400); text("/ 100", W-PAD, y+30, P.ink3);
+  if (paint) x.textAlign = "left";
+
+  y += 30;
+  f(20,600);
+  text(c.band.toUpperCase() + (c.all_three ? "  ·  ALL THREE LEGS" : ""), PAD, y,
+       c.score>=70 ? P.s3 : P.ink2);
+
+  /* ---- leg bars. The image carries its OWN legend and numeric readout,
+     because a standalone PNG has no page around it to explain the colours. */
+  y += 44;
+  const legs = ["insider","darkpool","institutional"];
+  const legCol = { insider:P.s1, darkpool:P.s2, institutional:P.s3 };
+  const BARX = PAD + 210, BARW = W - PAD - 150 - BARX;
+  legs.forEach(name => {
+    const leg = c.legs[name];
+    f(22,500); text(LEG_NAME[name], PAD, y+6, P.ink2);
+    if (paint){
+      x.fillStyle = P.grid;
+      roundRect(x, BARX, y-9, BARW, 16, 8); x.fill();
+      const w = leg.max ? BARW * Math.max(0,Math.min(1, leg.points/leg.max)) : 0;
+      if (w > 2){ x.fillStyle = legCol[name]; roundRect(x, BARX, y-9, w, 16, 8); x.fill(); }
+      x.textAlign = "right";
+    }
+    f(21,500);
+    text(leg.measured ? `${leg.points.toFixed(1)} / ${leg.max}` : "no data",
+         W-PAD, y+6, leg.measured ? P.ink1 : P.ink3);
+    if (paint) x.textAlign = "left";
+    y += 40;
+  });
+
+  y += 14;
+  if (paint){ x.strokeStyle = P.line; x.beginPath(); x.moveTo(PAD,y); x.lineTo(W-PAD,y); x.stroke(); }
+  y += 40;
+
+  /* ---- insider block. Grouped BY PERSON, never by filing: the same two
+     names eleven times over is not a list, and each filing's stake percentage
+     is measured against that filing's own opening holding so they cannot be
+     summed. */
+  f(24,600); text("INSIDER BUYING", PAD, y, P.ink3);
+  f(24,400);
+  if (paint) x.textAlign = "right";
+  text(`${dshort(c.first_date)} – ${dshort(c.last_date)}`, W-PAD, y, P.ink3);
+  if (paint) x.textAlign = "left";
+  y += 42;
+  f(30,600);
+  text(`${$m(c.notional)}`, PAD, y, P.ink1);
+  const nw = x.measureText(`${$m(c.notional)}`).width;
+  f(24,400);
+  fitText(x, ` from ${c.distinct_buyers} buyer${c.distinct_buyers===1?"":"s"}`
+       + (c.vs_fills_pct!=null ? `  ·  now ${pct(c.vs_fills_pct,0)} vs fills` : ""),
+       PAD + nw + 6, y, W - PAD - (PAD + nw + 6), P.ink2, paint);
+  y += 34;
+
+  const people = (c.people||[]).slice(0, full ? 4 : 3);
+  people.forEach((p, i) => {
+    f(24,600);
+    // The no-names variant keeps the ROLE, which is the part that carries the
+    // signal, and drops the identity.
+    const who = full ? p.name : (p.title ? titleOnly(p.title) : "Insider "+(i+1));
+    text(who, PAD, y, P.ink1);
+    if (full && p.title){
+      const ww = x.measureText(who).width;
+      f(20,400);
+      // stop short of the right-hand amount column
+      fitText(x, " · " + p.title, PAD + ww + 4, y,
+              (W - PAD - 260) - (PAD + ww + 4), P.ink3, paint);
+    }
+    if (paint) x.textAlign = "right";
+    f(24,500); text($m(p.notional), W-PAD, y, P.ink1);
+    const pw = x.measureText($m(p.notional)).width;
+    f(20,400);
+    text(stakeLabel(p), W-PAD-pw-16, y, P.ink2);
+    if (paint) x.textAlign = "left";
+    y += 34;
+  });
+  if ((c.people||[]).length > people.length){
+    f(20,400);
+    text(`+ ${c.people.length-people.length} more`, PAD, y, P.ink3);
+    y += 30;
+  }
+
+  /* ---- dark pool */
+  if (dk.print_count){
+    y += 16;
+    f(24,600); text("DARK POOL", PAD, y, P.ink3);
+    y += 40;
+    f(30,600); text($m(dk.window_notional), PAD, y, P.ink1);
+    const dw = x.measureText($m(dk.window_notional)).width;
+    f(24,400);
+    fitText(x, ` off-exchange · ${dk.active_sessions} active session${dk.active_sessions===1?"":"s"}`,
+         PAD + dw + 6, y, W - PAD - (PAD + dw + 6), P.ink2, paint);
+    y += 34;
+    f(22,400);
+    fitText(x, `Biggest block ${(100*dk.max_size_vs_avg30).toFixed(1)}% of 30-day average volume`
+         + (dk.overlap_days ? ` · ${dk.overlap_days} landed near an insider buy` : ""),
+         PAD, y, W-2*PAD, P.ink2, paint);
+    y += 30;
+    const sess = (dk.sessions||[]).slice().reverse();
+    if (sess.length){
+      const maxShare = Math.max(0.0001, ...sess.map(s=>s.share_of_day||0));
+      const bw = Math.min(38, (W-2*PAD)/Math.max(1,sess.length) - 6);
+      const bh = 56;
+      sess.forEach((s,i) => {
+        const hh = Math.max(4, Math.round(bh * (s.share_of_day||0)/maxShare));
+        if (paint){
+          x.fillStyle = s.active ? P.s2 : P.grid;
+          roundRect(x, PAD + i*(bw+6), y + (bh-hh), bw, hh, 4); x.fill();
+        }
+      });
+      y += bh + 20;
+      /* Two lines, not one. As a single string this overflowed the right edge
+         of the canvas and the sentence ended mid-word -- caught only by
+         rendering the PNG and looking at it, never by review. `fitText` is
+         the general guard; the split is the fix for this specific caption. */
+      f(19,400);
+      fitText(x, `${sess[0].date} – ${sess[sess.length-1].date} · tallest bar `
+           + `${(100*maxShare).toFixed(1)}% of that day's volume`,
+           PAD, y, W-2*PAD, P.ink3, paint);
+      y += 24;
+      fitText(x, "Orange = a session clearing the 5% activity floor.",
+           PAD, y, W-2*PAD, P.ink3, paint);
+      y += 28;
+      if (dk.pressure != null){
+        f(21,400);
+        fitText(x, `Print location: ${Math.round(100*dk.ask_share)}% of clean premium `
+             + `at the offer vs ${Math.round(100*dk.bid_share)}% at the bid.`,
+             PAD, y, W-2*PAD, P.ink2, paint);
+        y += 28;
+      }
+    }
+  } else {
+    /* Say so explicitly. The leg bar reads "0.0 / 30" either way, and someone
+       reading a standalone PNG has no page around it to tell them whether
+       that means "measured and quiet" or "there was nothing to measure". */
+    y += 16;
+    f(24,600); text("DARK POOL", PAD, y, P.ink3);
+    y += 36;
+    f(22,400);
+    fitText(x, "No off-exchange prints above the premium floor in this window.",
+            PAD, y, W-2*PAD, P.ink2, paint);
+    y += 30;
+  }
+
+  /* ---- 13F. The quarter and the filing date are ALWAYS on the image: a PNG
+     that outlives the conversation must not read as live data. */
+  y += 16;
+  f(24,600); text("INSTITUTIONAL 13F", PAD, y, P.ink3);
+  y += 40;
+  if (inst){
+    f(30,600); text(`${inst.distinct_funds} fund${inst.distinct_funds===1?"":"s"}`, PAD, y, P.ink1);
+    const fw = x.measureText(`${inst.distinct_funds} fund${inst.distinct_funds===1?"":"s"}`).width;
+    f(24,400);
+    fitText(x, ` buying · ${$m(inst.total_value)} held · top weight `
+         + `${(100*inst.best_position_weight).toFixed(1)}% of book`,
+         PAD + fw + 6, y, W - PAD - (PAD + fw + 6), P.ink2, paint);
+    y += 34;
+    if (full){
+      (inst.funds||[]).slice(0,3).forEach(fd => {
+        f(22,500); text(fd.fund, PAD, y, P.ink1);
+        if (paint) x.textAlign = "right";
+        f(22,400); text(`${trajLabel(fd.trajectory)||fd.kind} · ${$m(fd.value)}`, W-PAD, y, P.ink2);
+        if (paint) x.textAlign = "left";
+        y += 30;
+      });
+    }
+    f(21,400);
+    fitText(x, `Quarter ended ${inst.report_date}, filed around ${inst.filed_around}. `
+         + `Quarterly data — not a live read.`, PAD, y, W-2*PAD, P.ink3, paint);
+    y += 30;
+  } else {
+    f(22,400);
+    fitText(x, "Not in the small-fund 13F universe — no coverage, not a zero reading.",
+            PAD, y, W-2*PAD, P.ink2, paint);
+    y += 30;
+    f(21,400);
+    fitText(x, "A card without the 13F leg caps at 75 of 100 by construction.",
+            PAD, y, W-2*PAD, P.ink3, paint);
+    y += 30;
+  }
+
+  /* ---- footer */
+  y += 24;
+  if (paint){ x.strokeStyle = P.line; x.beginPath(); x.moveTo(PAD,y); x.lineTo(W-PAD,y); x.stroke(); }
+  y += 34;
+  f(20,500); text(uwLabel("Confluence Desk"), PAD, y, P.ink2);
+  f(20,400);
+  const stamp = new Date().toLocaleDateString(undefined,
+    {year:"numeric", month:"short", day:"numeric"});
+  if (paint) x.textAlign = "right";
+  text(stamp, W-PAD, y, P.ink3);
+  if (paint) x.textAlign = "left";
+  y += 28;
+  f(19,400);
+  text("Insider 45 + dark pool 30 + 13F 25 = 100.  Data: Unusual Whales.  Not investment advice.", PAD, y, P.ink3);
+  y += 40;
+  return y;
+}
+
+/* Draw text that is guaranteed to fit the given width, ellipsising rather
+   than running off the canvas edge. Every long sentence in the share image
+   goes through this: the one that did not overflowed and ended mid-word. */
+function fitText(x, s, px, py, maxW, col, paint){
+  let t = String(s);
+  if (x.measureText(t).width > maxW){
+    while (t.length > 4 && x.measureText(t + "…").width > maxW) t = t.slice(0, -1);
+    t += "…";
+  }
+  if (paint){ x.fillStyle = col; x.fillText(t, px, py); }
+  return x.measureText(t).width;
+}
+
+function titleOnly(t){
+  return String(t).replace(/\s+/g," ").trim();
+}
+
+function roundRect(x, px, py, w, h, r){
+  r = Math.min(r, h/2, w/2);
+  x.beginPath();
+  x.moveTo(px+r, py); x.lineTo(px+w-r, py); x.quadraticCurveTo(px+w, py, px+w, py+r);
+  x.lineTo(px+w, py+h-r); x.quadraticCurveTo(px+w, py+h, px+w-r, py+h);
+  x.lineTo(px+r, py+h); x.quadraticCurveTo(px, py+h, px, py+h-r);
+  x.lineTo(px, py+r); x.quadraticCurveTo(px, py, px+r, py); x.closePath();
+}
+
+/* ------------------------------------------------------------- controls */
+$("#filterSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.filter = b.dataset.filter;
+  [...e.currentTarget.children].forEach(n => n.classList.toggle("on", n===b));
+  render();
+});
+$("#detailSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.share.detail = b.dataset.detail;
+  [...e.currentTarget.children].forEach(n => n.classList.toggle("on", n===b));
+  drawShare();
+});
+$("#shareThemeSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.share.theme = b.dataset.stheme;
+  [...e.currentTarget.children].forEach(n => n.classList.toggle("on", n===b));
+  drawShare();
+});
+$("#sortSel").addEventListener("change", e => { state.sort = e.target.value; render(); });
+$("#searchBox").addEventListener("input", e => { state.q = e.target.value.trim(); render(); });
+$("#refreshBtn").addEventListener("click", load);
+$("#closeShare").addEventListener("click", () => $("#shareModal").classList.remove("open"));
+$("#shareModal").addEventListener("click", e => {
+  if (e.target === $("#shareModal")) $("#shareModal").classList.remove("open");
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") $("#shareModal").classList.remove("open");
+});
+$("#themeBtn").addEventListener("click", () => {
+  const root = document.documentElement;
+  const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  root.setAttribute("data-theme", next);
+  $("#themeBtn").textContent = next === "dark" ? "Light" : "Dark";
+});
+$("#dlBtn").addEventListener("click", () => {
+  const c = state.share.card; if (!c) return;
+  const a = document.createElement("a");
+  a.download = `${c.ticker}-confluence-${c.score.toFixed(0)}.png`;
+  a.href = $("#shareCanvas").toDataURL("image/png");
+  a.click();
+});
+$("#copyBtn").addEventListener("click", async () => {
+  try {
+    const blob = await new Promise(r => $("#shareCanvas").toBlob(r, "image/png"));
+    await navigator.clipboard.write([new ClipboardItem({"image/png": blob})]);
+    $("#copyBtn").textContent = "Copied";
+    setTimeout(() => $("#copyBtn").textContent = "Copy image", 1400);
+  } catch (err) {
+    $("#shareHint").textContent = "Copy failed: " + err.message + " — use Download PNG.";
+  }
+});
+$("#copyCaption").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("#captionBox").value);
+    $("#copyCaption").textContent = "Copied";
+    setTimeout(() => $("#copyCaption").textContent = "Copy caption", 1400);
+  } catch (err) { /* clipboard denied; the textarea is selectable anyway */ }
+});
+
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>

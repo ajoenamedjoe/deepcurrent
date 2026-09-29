@@ -1,0 +1,220 @@
+<title>Unusual Flow Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  /* Same tokens as the five sibling desks, so all six read as one system. */
+  --ground:#fcfcfb; --panel:#ffffff; --panel-2:#f4f4f1; --line:#e2e1dc; --line-soft:#edece8;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#84827b;
+  --accent:#2a78d6; --accent-soft:#2a78d61f;
+  --bull:#1baf7a; --bear:#e34948; --pend:#eda100; --violet:#4a3aa7;
+  --meter-track:#e8e7e2;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:3px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#1a1a19; --panel:#232321; --panel-2:#2b2b28; --line:#3a3a36; --line-soft:#2f2f2c;
+    --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#8d8c82;
+    --accent:#3987e5; --accent-soft:#3987e529;
+    --bull:#199e70; --bear:#e66767; --pend:#c98500; --violet:#9085e9;
+    --meter-track:#34342f;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#1a1a19; --panel:#232321; --panel-2:#2b2b28; --line:#3a3a36; --line-soft:#2f2f2c;
+  --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#8d8c82;
+  --accent:#3987e5; --accent-soft:#3987e529;
+  --bull:#199e70; --bear:#e66767; --pend:#c98500; --violet:#9085e9;
+  --meter-track:#34342f;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  padding-block:0 48px;padding-left:20px;padding-right:20px;max-width:1360px;margin:0 auto}
+h1,h2,h3{margin:0;text-wrap:balance}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.lbl{font-family:var(--cond);font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;font-size:11px;color:var(--ink-3)}
+
+/* ---------- header ---------- */
+header{padding-block:28px 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 14px}
+.brand h1{font-family:var(--cond);font-weight:700;font-size:30px;letter-spacing:-.01em}
+.tape{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.rule{margin-top:14px;font-size:14px;color:var(--ink-2);max-width:66ch}
+.rule b{color:var(--ink);font-weight:600}
+.stats{display:flex;flex-wrap:wrap;gap:22px;margin-top:16px}
+.stat .v{font-family:var(--mono);font-size:21px;font-weight:500;line-height:1.1}
+.stat .k{font-family:var(--cond);font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;font-size:10px;color:var(--ink-3);margin-top:3px}
+
+/* ---------- lanes ---------- */
+nav{display:flex;flex-wrap:wrap;gap:6px;padding-block:16px;position:sticky;top:0;
+  background:var(--ground);z-index:5;border-bottom:1px solid var(--line-soft)}
+.lane-btn{font-family:var(--cond);font-weight:600;font-size:13px;letter-spacing:.03em;
+  background:none;border:1px solid var(--line);color:var(--ink-2);
+  padding:6px 12px;border-radius:var(--r);cursor:pointer;display:flex;gap:7px;align-items:center}
+.lane-btn:hover{border-color:var(--ink-3);color:var(--ink)}
+.lane-btn[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.lane-btn .c{font-family:var(--mono);font-size:11px;opacity:.7}
+.lane-note{font-size:13px;color:var(--ink-2);padding-block:14px 2px;max-width:72ch}
+
+/* ---------- grid ---------- */
+.grid{display:grid;gap:14px;align-items:start;margin-top:14px;
+  grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+
+/* ---------- card ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px 16px 14px;display:flex;flex-direction:column;gap:13px}
+.card.out{opacity:.72}
+.chead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.tkr{font-family:var(--cond);font-weight:700;font-size:27px;line-height:1;letter-spacing:-.01em}
+.sect{font-size:11.5px;color:var(--ink-3);margin-top:5px}
+.scorewrap{text-align:right;flex:none}
+.score{font-family:var(--mono);font-size:30px;font-weight:500;line-height:1}
+.score .of{font-size:13px;color:var(--ink-3)}
+.pill{display:inline-block;font-family:var(--cond);font-weight:600;font-size:11px;
+  letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:2px;
+  border:1px solid currentColor;margin-top:6px}
+.bull{color:var(--bull)} .bear{color:var(--bear)} .undir{color:var(--ink-3)}
+
+/* ask / bid split — the >75% ask gate made physical */
+.split{display:flex;flex-direction:column;gap:5px}
+.splitbar{display:flex;height:9px;border-radius:2px;overflow:hidden;background:var(--meter-track);gap:2px}
+.splitbar i{display:block;height:100%}
+.splitbar .a{background:var(--accent)}
+.splitbar .b{background:var(--ink-3);opacity:.55}
+.splitrow{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--ink-2)}
+.splitrow .num{color:var(--ink)}
+/* The 75% gate tick sits ON the bar it refers to and the words live in the row
+   below. A floating caption above the bar collided with the direction pill. */
+.splitbar{position:relative}
+.splitbar .gate{position:absolute;top:-3px;left:75%;width:2px;height:15px;
+  background:var(--ground);border-radius:1px;z-index:1}
+.gatelab{font-family:var(--cond);font-weight:600;font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-3)}
+
+/* the print itself, OSI beside its decode */
+.print{background:var(--panel-2);border-radius:var(--r);padding:10px 11px;display:flex;
+  flex-direction:column;gap:4px}
+.osi{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.02em;
+  overflow-x:auto;white-space:nowrap}
+.decoded{font-family:var(--cond);font-weight:600;font-size:15.5px;letter-spacing:.01em}
+.printfacts{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin-top:2px}
+.printfacts .num{color:var(--ink)}
+
+/* six meters */
+/* Six components on ONE shared scale.
+   The TRACK length is the component's maximum weight and the FILL is what it
+   earned, so bar length is directly comparable in points across rows: a
+   24-point component is three times the length of an 8-point one, and a full
+   bar means maxed rather than "nearly full out of a small total".
+   Equal-length tracks implied every component was worth the same, which made
+   Aggression 24.0/24 and Premium 6.6/8 look alike when one is 3.6x the other. */
+.meters{display:flex;flex-direction:column;gap:7px}
+/* 76px let "AGGRESSION" run flush into the bar with no gap. 86 + the grid gap
+   keeps the longest label clear of the scale at every width. */
+.meter{display:grid;grid-template-columns:86px 1fr 56px;gap:10px;align-items:center}
+.meter .mn{font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+.scale{position:relative;height:8px}
+/* display:block is load-bearing. These were <span>s, and width does not apply
+   to non-replaced INLINE elements -- every fill computed to 0px wide while its
+   style said "width:62.8%", so all six rows rendered as identical empty grey
+   tracks. Absolute positioning also anchors every bar to one left baseline. */
+.track,.fill{position:absolute;left:0;top:0;display:block;height:8px;
+  border-radius:0 3px 3px 0}
+.track{background:var(--meter-track)}
+.fill{background:var(--accent)}
+.fill.zero{background:var(--ink-3);opacity:.45;width:2px!important;border-radius:1px}
+.fill.unmeasured{background:repeating-linear-gradient(135deg,
+  var(--ink-3) 0 3px,transparent 3px 6px);opacity:.55}
+.meter .mv{font-family:var(--mono);font-size:11.5px;text-align:right;color:var(--ink)}
+.meter .mv .of{color:var(--ink-3)}
+.meter[data-max="true"] .mn{color:var(--ink)}
+.meter[data-max="true"] .fill{background:var(--accent)}
+.mkey{font-size:11px;color:var(--ink-3);margin-top:1px}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:11px;font-family:var(--cond);font-weight:600;letter-spacing:.04em;
+  padding:2.5px 7px;border-radius:2px;background:var(--panel-2);color:var(--ink-2);
+  border:1px solid var(--line-soft)}
+.chip.ok{color:var(--bull);border-color:currentColor}
+.chip.warn{color:var(--pend);border-color:currentColor}
+.chip.bad{color:var(--bear);border-color:currentColor}
+.chip.hot{color:var(--accent);border-color:currentColor}
+
+.why{font-size:12.5px;color:var(--ink-2);border-left:2px solid var(--line);padding-left:9px}
+.why b{color:var(--ink);font-weight:600}
+.cfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border-top:1px solid var(--line-soft);padding-top:10px}
+.share-btn{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.04em;white-space:nowrap;
+  background:none;border:1px solid var(--line);color:var(--ink-2);
+  padding:5px 11px;border-radius:var(--r);cursor:pointer}
+.share-btn:hover{border-color:var(--accent);color:var(--accent)}
+.carried{font-size:11.5px;color:var(--ink-3)}
+
+/* ---------- share panel ---------- */
+.modal{position:fixed;inset:0;background:#000000b8;display:none;z-index:50;
+  padding:20px;overflow:auto}
+.modal[data-open="true"]{display:flex;align-items:flex-start;justify-content:center}
+.sheet{background:var(--ground);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px;max-width:660px;width:100%;display:flex;flex-direction:column;gap:14px;
+  margin-block:auto}
+.sheet h2{font-family:var(--cond);font-weight:700;font-size:19px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.04em;
+  border:1px solid var(--line);background:none;color:var(--ink-2);
+  padding:5px 11px;border-radius:var(--r);cursor:pointer}
+.opt[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+#shot{width:100%;height:auto;border:1px solid var(--line);border-radius:var(--r);display:block;
+  background:var(--panel-2)}
+.cap{width:100%;min-height:82px;font-family:var(--sans);font-size:13.5px;line-height:1.5;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:var(--r);padding:10px;resize:vertical}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.hint{font-size:12px;color:var(--ink-3)}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- tape panel ---------- */
+.tape-sheet{max-width:1080px}
+.tape-sheet .sub{font-size:13px;color:var(--ink-2)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.pickrow{display:flex;gap:6px;flex-wrap:wrap}
+.pickrow .opt{font-family:var(--mono);font-weight:500;letter-spacing:0;text-transform:none}
+.tsum{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-2)}
+.tsum .num{color:var(--ink)}
+.twrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table.tape{border-collapse:collapse;width:100%;font-size:12.5px;min-width:760px}
+table.tape th{font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);background:var(--panel-2);
+  position:sticky;top:0}
+table.tape td{padding:6px 9px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+table.tape td.n,table.tape th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+table.tape tr.cx td{color:var(--ink-3);text-decoration:line-through}
+.side-ask{color:var(--accent);font-weight:600}
+.side-bid,.side-none{color:var(--ink-3)}
+.flag{display:inline-block;font-family:var(--cond);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:2px;padding:0 5px;margin-right:3px;color:var(--ink-2)}
+.tape-empty{padding:18px;font-size:13px;color:var(--ink-2)}
+.uwlink{font-size:12.5px;color:var(--accent);text-decoration:none}
+.uwlink:hover{text-decoration:underline}
+.cfoot .btns{display:flex;gap:6px}
+
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-3);display:flex;flex-direction:column;gap:7px;max-width:78ch}
+footer b{color:var(--ink-2);font-weight:600}
+@media (max-width:430px){
+  body{padding-left:16px;padding-right:16px}
+  .grid{grid-template-columns:1fr}
+  .brand h1{font-size:25px}
+  /* 66px clipped "AGGRESSION" to "AGGRESSIC…" at 400px. Measured, not guessed. */
+  .meter{grid-template-columns:78px 1fr 50px;gap:8px}
+  .meter .mn{font-size:10px;letter-spacing:.03em}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>

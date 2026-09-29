@@ -1,0 +1,66 @@
+UW SWING DESK - QUICK START
+===========================
+
+EVERY TIME YOU WANT TO USE IT:
+
+  1. Double-click  START_HERE.bat
+  2. Wait a few seconds - your browser opens by itself
+  3. Leave the black window open while you use it
+     (you can minimize it - just don't close it)
+
+The first time only, it asks you to paste your Unusual Whales
+API token. After that it remembers.
+
+Best hours: start it around 9:45am ET, trust it from 10:00,
+close it after 4:00pm ET. Outside market hours the data is
+frozen on the last session.
+
+
+READING THE ALERTS
+------------------
+Each card is a setup where at least 3 of 5 signals agree.
+Seeing none is normal - it stays quiet unless things line up.
+
+The badge that matters most is the green one:
+     HELD 7 SCANS - 7/7
+A setup that has held across many scans is real. One that
+says "just appeared" may be gone in a minute. Persistence is
+the signal; a single flash is noise.
+
+Tick "Show below-threshold watchlist" to see near-misses and
+why each one is held back.
+
+
+DISCORD ALERTS (optional)
+-------------------------
+Your own private channel only: posting Unusual Whales data to other people
+(a public or paid server) may need a redistribution licence from Unusual Whales.
+
+To get posts in Discord:
+
+  1. In Discord, right-click your channel
+  2. Edit Channel -> Integrations -> Webhooks -> New Webhook
+  3. Click "Copy Webhook URL"
+  4. Open the file named  .env  in Notepad
+  5. Add a line:   DISCORD_WEBHOOK_URL=<paste the URL here>
+  6. Save, close the black window, run START_HERE.bat again
+
+To test it, visit:  http://127.0.0.1:8787/api/notify/test
+
+You'll only get posts for HIGH-CONVICTION setups: score 60+,
+4 of 5 signals agreeing, and held for 3 scans in a row. Plus
+one summary each weekday at 4:00pm ET.
+
+This is deliberately quiet. Expect a handful a week, not a
+handful an hour.
+
+
+IF SOMETHING GOES WRONG
+-----------------------
+Browser didn't open   ->  go to http://127.0.0.1:8787
+Blue "protected your PC" box -> More info, then Run anyway
+"Python isn't installed" -> https://www.python.org/downloads/
+                            tick "Add python.exe to PATH"
+To change your token  ->  delete .env, run START_HERE.bat again
+
+Full details are in README.md

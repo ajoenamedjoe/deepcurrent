@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Growth Leaders (O'Neil-style)</title>
+<style>
+/* Same validated palette tokens as the dashboard, so its themes restyle this page too. */
+:root {
+  color-scheme: light;
+  --surface-1: #fcfcfb; --surface-2: #f4f4f1; --page: #f9f9f7;
+  --ink-1: #0b0b0b; --ink-2: #52514e; --ink-3: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10); --border-strong: rgba(11,11,11,0.18);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --gain: #0b8a0b; --loss: #c83232;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19; --surface-2: #232322; --page: #0d0d0d;
+  --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-3: #898781;
+  --grid: #2c2c2a; --axis: #383835;
+  --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.18);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --gain: #2fbf4a; --loss: #f0625f;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink-1); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.n { font-variant-numeric: tabular-nums; }
+button, input { font: inherit; color: var(--ink-1); background: var(--surface-1); border: 1px solid var(--border-strong);
+  border-radius: 7px; padding: 5px 11px; }
+button { cursor: pointer; }
+button:hover:not(:disabled) { background: var(--surface-2); }
+button.sel { background: var(--ink-1); color: var(--page); border-color: var(--ink-1); }
+button:disabled { opacity: .5; cursor: default; }
+a { color: var(--s1); }
+h1 { font-size: 20px; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin: 0 0 8px; font-weight: 600; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 16px; }
+header { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+header .sub { color: var(--ink-3); font-size: 12.5px; max-width: 720px; }
+.spacer { flex: 1; }
+.panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.mkt { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; border-left: 4px solid var(--ink-3); }
+.mkt.uptrend { border-left-color: var(--gain); } .mkt.pressure { border-left-color: var(--warning); } .mkt.correction { border-left-color: var(--loss); }
+.mkt .lab { font-size: 18px; font-weight: 650; }
+.mkt .txt { color: var(--ink-2); font-size: 13px; flex: 1 1 360px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.kpi { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.kpi b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+.kpi span { color: var(--ink-3); font-size: 12px; }
+.bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 5px 11px; }
+.seg button + button { border-left: 1px solid var(--border-strong); }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 600; color: var(--ink-3); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em;
+  padding: 6px 8px; border-bottom: 1px solid var(--border-strong); cursor: pointer; white-space: nowrap; user-select: none; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; white-space: nowrap; }
+tr.row { cursor: pointer; } tr.row:hover td { background: var(--surface-2); }
+td.t b { font-size: 14px; } td.t small { color: var(--ink-3); display: block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+.score { display: inline-flex; align-items: center; gap: 6px; }
+.score .track i { display: block; height: 100%; border-radius: 3px; background: var(--s1); }
+.score .track { width: 60px; height: 6px; border-radius: 3px; background: var(--grid); display: inline-block; overflow: hidden; }
+.dots { display: inline-flex; gap: 3px; }
+.dot { width: 20px; height: 20px; border-radius: 5px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center;
+  justify-content: center; border: 1.5px solid var(--border-strong); color: var(--ink-3); }
+.dot.p { background: var(--gain); border-color: var(--gain); color: #fff; }
+.dot.f { border-color: var(--loss); color: var(--loss); }
+.dot.u { border-style: dashed; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border-strong); color: var(--ink-2); }
+.chip.leader { background: var(--s1); border-color: var(--s1); color: #fff; font-weight: 600; }
+.chip.good { border-color: var(--gain); color: var(--gain); } .chip.bad { border-color: var(--loss); color: var(--loss); }
+.chip.warn { border-color: var(--warning); color: var(--ink-1); }
+.muted { color: var(--ink-3); } .small { font-size: 12px; }
+.over { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: none; z-index: 20; }
+.over.show { display: block; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100vw); background: var(--surface-1); z-index: 21;
+  border-left: 1px solid var(--border-strong); overflow-y: auto; padding: 18px; transform: translateX(105%); transition: transform .18s; }
+.drawer.show { transform: none; }
+.check { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.check .pts { color: var(--ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.levels { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
+.levels div { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
+.levels b { display: block; font-size: 16px; font-variant-numeric: tabular-nums; }
+.levels span { font-size: 11.5px; color: var(--ink-3); }
+.alert { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.progress { height: 6px; background: var(--grid); border-radius: 3px; overflow: hidden; margin: 8px 0; }
+.progress i { display: block; height: 100%; background: var(--s1); }
+footer { color: var(--ink-3); font-size: 12px; padding: 8px 0 24px; }
+.cardbox { margin-top: 12px; } .cardbox canvas { width: 100%; border-radius: 10px; border: 1px solid var(--border); }
+@media (max-width: 640px) {
+  .seg { flex-wrap: wrap; }
+  .wrap { padding: 10px; } .mkt .lab { font-size: 16px; } td, th { padding: 6px 5px; }
+}
+</style>
+<script src="http://127.0.0.1:8700/theme.js?desk=growth"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 data-uw-name>Growth Leaders (O'Neil-style)</h1>
+      <div class="sub">Seven checks inspired by William O'Neil's growth-stock method: current and annual earnings, new highs,
+        supply and demand, leadership, institutional sponsorship and market direction. Our own calculations; not affiliated
+        with Investor's Business Daily. Data: Unusual Whales.</div>
+    </div>
+    <span class="spacer"></span>
+    <button id="scanBtn">Scan now</button>
+    <button id="themeBtn" title="Light / dark">◐</button>
+  </header>
+  <div id="app"><div class="panel">Loading…</div></div>
+  <footer id="foot"></footer>
+</div>
+<div class="over" id="over"></div>
+<aside class="drawer" id="drawer" aria-label="Stock detail"></aside>
+
+<script>
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const usd = (x) => x == null ? "–" : "$" + Number(x).toFixed(2);
+const KEYS = ["C", "A", "N", "S", "L", "I", "M"];
+const NAMES = { C: "Current earnings", A: "Annual earnings", N: "New highs", S: "Supply & demand", L: "Leader", I: "Institutions", M: "Market direction" };
+const STATE_TXT = { breakout: ["Breakout", "good"], in_range: ["In buy range", "good"], near_pivot: ["Near pivot", "warn"],
+  weak_breakout: ["Above pivot, light volume", "warn"], extended: ["Extended", ""], in_base: ["In base", ""], none: ["No base", ""], unknown: ["–", ""] };
+let DATA = null, FILTER = "all", SORT = { k: "score", d: -1 }, Q = "";
+try { FILTER = localStorage.getItem("gFilter") || "all"; } catch (e) { /* storage off */ }
+
+/* own light/dark (hidden while the dashboard's theme is in charge) */
+function applyMode() {
+  let m = null; try { m = localStorage.getItem("gMode"); } catch (e) {}
+  if (!window.UWTheme) document.documentElement.setAttribute("data-theme", m || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+}
+applyMode();
+$("#themeBtn").onclick = () => { const d = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  try { localStorage.setItem("gMode", d); } catch (e) {} document.documentElement.setAttribute("data-theme", d); if (CUR) drawCard(CUR); };
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  return r.json();
+}
+
+function check(c, k) { return (c.checks || []).find((x) => x.key === k) || {}; }
+function dot(x, k) {
+  const cls = !x.measured ? "u" : x.passed ? "p" : "f";
+  const tip = NAMES[k] + ": " + (!x.measured ? "not measured. " : x.passed ? "passes. " : "does not pass. ") + (x.text || "");
+  return `<span class="dot ${cls}" title="${esc(tip)}">${k}</span>`;
+}
+function stateChip(b) { const s = STATE_TXT[(b || {}).state] || STATE_TXT.unknown; return `<span class="chip ${s[1]}" title="${esc((b || {}).text || "")}">${s[0]}</span>`; }
+
+async function load() {
+  try { DATA = await api("/api/board"); } catch (e) { $("#app").innerHTML = `<div class="panel">The desk isn't answering: ${esc(e.message)}</div>`; return; }
+  if (document.activeElement && document.activeElement.id === "q" && $("#rows")) rows();   // don't steal focus mid-typing
+  else render();
+}
+
+function render() {
+  const d = DATA;
+  $("#scanBtn").disabled = !!d.scanning;
+  $("#scanBtn").textContent = d.scanning ? "Scanning…" : "Scan now";
+  if (d.pending) {
+    const p = d.progress || {};
+    const pc = p.total ? Math.round(100 * p.done / p.total) : 5;
+    $("#app").innerHTML = `<div class="panel"><b>${esc(d.message)}</b>
+      <div class="progress"><i style="width:${pc}%"></i></div>
+      <div class="small muted">${esc(p.step || "starting")} ${p.total ? `${p.done} of ${p.total}` : ""}</div>
+      ${d.error ? `<p style="color:var(--loss)">${esc(d.error)}</p>` : ""}
+      <pre class="small muted" style="white-space:pre-wrap">${esc((d.log || []).join("\n"))}</pre></div>`;
+    return;
+  }
+  const m = d.market || {};
+  const k = d.counts || {};
+  const prog = d.scanning && d.progress && d.progress.total ? `<div class="progress"><i style="width:${Math.round(100 * d.progress.done / d.progress.total)}%"></i></div>` : "";
+  $("#app").innerHTML = `
+    <div class="panel mkt ${esc(m.state || "")}" id="mktPanel">
+      <div><h2>Market direction (M)</h2><div class="lab">${esc(m.label || "Unknown")}</div></div>
+      <div class="txt">${esc(m.text || "")}${m.state && !m.ok ? "<br><b>Most stocks follow the market: new buys wait for a confirmed uptrend.</b>" : ""}</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><b>${d.run.universe ?? "–"}</b><span>stocks ranked</span></div>
+      <div class="kpi"><b>${k.cards ?? 0}</b><span>candidates checked</span></div>
+      <div class="kpi"><b>${k.leaders ?? 0}</b><span>Leaders (all 7 pass)</span></div>
+      <div class="kpi"><b>${k.six_pass ?? 0}</b><span>pass C A N S L I</span></div>
+      <div class="kpi"><b>${k.breakouts ?? 0}</b><span>breaking out</span></div>
+      <div class="kpi"><b>${k.near_pivot ?? 0}</b><span>near a pivot</span></div>
+    </div>
+    ${prog}
+    <div class="panel">
+      <div class="bar">
+        <div class="seg" id="filt">${[["all", "All", ""], ["leaders", "Leaders", "All seven checks pass"], ["six", "6 of 6", "C A N S L I all pass (market aside)"], ["setups", "Setups", "Breaking out, in the buy range or near a pivot"]]
+          .map(([v, l, tip]) => `<button data-v="${v}" title="${tip}" class="${FILTER === v ? "sel" : ""}">${l}</button>`).join("")}</div>
+        <input id="q" placeholder="Ticker or industry" value="${esc(Q)}" style="width:170px">
+        <span class="spacer"></span>
+        <span class="small muted">Session ${esc(d.run.session)} · ${d.observed_max != null ? "top score " + d.observed_max : ""}</span>
+      </div>
+      <div class="tablewrap"><table><thead><tr>
+        ${[["ticker", "Stock"], ["score", "Score"], ["checks", "C A N S L I M"], ["rs", "RS"], ["group", "Group"], ["base", "Base"], ["buy", "Buy range"], ["flow", "Options today"]]
+          .map(([key, lab]) => `<th data-k="${key}">${lab}${SORT.k === key ? (SORT.d < 0 ? " ▾" : " ▴") : ""}</th>`).join("")}
+      </tr></thead><tbody id="rows"></tbody></table></div>
+      <p class="small muted" style="margin:8px 0 0">Score = C 25 + A 15 + N 10 + S 10 + L 25 + I 15 of 100; parts with no data drop out and the rest re-scale.
+        M is the same for every stock, so it isn't in the score: it's the seventh check for the Leader badge.</p>
+    </div>
+    <div class="panel"><h2>Breakout alerts</h2><div id="alerts"></div></div>`;
+  $$("#filt button").forEach((b) => b.onclick = () => { FILTER = b.dataset.v; try { localStorage.setItem("gFilter", FILTER); } catch (e) {} render(); });
+  $("#q").oninput = (e) => { Q = e.target.value; rows(); };
+  $$("th[data-k]").forEach((th) => th.onclick = () => { const key = th.dataset.k; SORT = { k: key, d: SORT.k === key ? -SORT.d : -1 }; render(); });
+  rows();
+  $("#alerts").innerHTML = (d.alerts || []).length ? d.alerts.map((a) => `<div class="alert"><b>${esc(a.ticker)}</b>
+      ${a.leader ? '<span class="chip leader">Leader</span>' : ""} ${a.posted ? '<span class="chip">posted to Discord</span>' : ""}
+      <span class="muted small">${new Date(a.at * 1000).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+      <div class="small">${esc(a.text)}</div></div>`).join("")
+    : `<p class="small muted">No breakouts yet. A breakout is a close (or, in market hours, a price) above a base's pivot on volume at least 40% above average.</p>`;
+  $("#foot").innerHTML = `Model ${esc(d.method && d.method.model_version)} · page ${esc(d.build && d.build.index_mtime)} · ${d.distinct_days} session${d.distinct_days === 1 ? "" : "s"} scanned ·
+    ${d.run.api_calls ?? 0} API calls last run · Data: Unusual Whales. Educational use only, not investment advice.
+    ${d.error ? `<br><span style="color:var(--loss)">Last scan: ${esc(d.error)}</span>` : ""}`;
+}
+
+function sortVal(c, k) {
+  const b = c.base || {};
+  return { ticker: c.ticker, score: c.score ?? -1, rs: c.rs ?? -1, group: check(c, "L").group_pct ?? -1,
+    checks: (c.passed || []).length, base: ["breakout", "in_range", "near_pivot", "weak_breakout", "in_base", "extended", "none", "unknown"].indexOf(b.state) * -1,
+    buy: b.buy_from ?? -1, flow: c.flow ? c.flow.lean : -1 }[k];
+}
+
+function rows() {
+  const q = Q.trim().toUpperCase();
+  let list = (DATA.cards || []).filter((c) => {
+    if (FILTER === "leaders" && !c.leader) return false;
+    if (FILTER === "six" && !c.six_pass) return false;
+    if (FILTER === "setups" && !["breakout", "near_pivot", "in_range"].includes((c.base || {}).state)) return false;
+    return !q || c.ticker.includes(q) || String(c.industry || "").toUpperCase().includes(q);
+  });
+  list.sort((a, b) => { const x = sortVal(a, SORT.k), y = sortVal(b, SORT.k); return (x < y ? -1 : x > y ? 1 : 0) * SORT.d; });
+  $("#rows").innerHTML = list.slice(0, 400).map((c) => {
+    const b = c.base || {}; const L = check(c, "L");
+    return `<tr class="row" data-t="${esc(c.ticker)}">
+      <td class="t"><b>${esc(c.ticker)}</b> ${c.leader ? '<span class="chip leader">Leader</span>' : ""}<small>${esc(c.name || c.industry || "")}</small></td>
+      <td>${c.score == null ? '<span class="muted small">too little data</span>' : `<span class="score"><span class="track"><i style="width:${c.score}%"></i></span><b class="n">${c.score}</b></span>`}</td>
+      <td><span class="dots">${KEYS.map((k) => dot(check(c, k), k)).join("")}</span></td>
+      <td class="n">${c.rs ?? "–"}</td>
+      <td class="small n">${L.group_rank ? "#" + L.group_rank + " of " + L.group_of : "–"}</td>
+      <td>${stateChip(c.live && c.live.state ? Object.assign({}, b, { state: c.live.state, text: c.live.text }) : b)}</td>
+      <td class="n small">${b.buy_from ? usd(b.buy_from) + "–" + usd(b.buy_to) : "–"}</td>
+      <td>${c.flow ? `<span class="chip ${c.flow.tone === "good" ? "good" : c.flow.tone === "bad" ? "bad" : ""}" title="${esc(c.flow.text)}. Shown for context, not scored.">${Math.round(100 * c.flow.lean)}% bullish</span>` : '<span class="muted small">–</span>'}</td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="8" class="muted">Nothing matches.</td></tr>`;
+  $$("#rows tr.row").forEach((tr) => tr.onclick = () => openCard(tr.dataset.t));
+}
+
+let CUR = null;
+async function openCard(t) {
+  let c = (DATA.cards || []).find((x) => x.ticker === t);
+  try { const full = await api("/api/ticker?t=" + encodeURIComponent(t)); if (!full.error) c = full; } catch (e) {}
+  if (!c) return;
+  CUR = c;
+  const b = c.base || {};
+  $("#drawer").innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px"><h1>${esc(c.ticker)}</h1>${c.leader ? '<span class="chip leader">Leader</span>' : ""}
+      <span class="spacer"></span><button id="close">Close</button></div>
+    <div class="muted small">${esc(c.name || "")} · ${esc(c.industry || "")} · ${usd(c.price)}</div>
+    <div style="margin:12px 0;font-size:15px">Score <b style="font-size:26px" class="n">${c.score ?? "–"}</b> <span class="muted small">of 100 · ${c.earned} of ${c.measured} measured points</span></div>
+    ${c.checks.map((x) => `<div class="check">${dot(x, x.key)}<div><b>${NAMES[x.key]}</b><div class="small">${esc(x.text)}</div></div>
+      <div class="pts">${x.key === "M" ? "" : x.measured ? x.points + " / " + x.possible : "not measured"}</div></div>`).join("")}
+    <h2 style="margin-top:16px">Base and buy point</h2>
+    <p class="small" style="margin:0">${esc(b.text || "")}</p>
+    ${b.pivot ? `<div class="levels">
+      <div><span>Pivot (buy point)</span><b>${usd(b.pivot)}</b></div><div><span>Buy range (up to +5%)</span><b>${usd(b.buy_from)}–${usd(b.buy_to)}</b></div>
+      <div><span>Stop: 8% below the buy point</span><b>${usd(b.stop)}</b></div><div><span>Take profits (+20–25%)</span><b>${usd(b.profit_from)}–${usd(b.profit_to)}</b></div></div>
+      <p class="small muted">O'Neil's sell rules: cut any loss at 7–8% below where you bought, and take most gains at 20–25%.</p>` : ""}
+    ${c.flow ? `<p class="small">${esc(c.flow.text)} <span class="muted">(context only, not scored)</span></p>` : ""}
+    ${c.next_earnings ? `<p class="small muted">Next earnings ${esc(c.next_earnings)}.</p>` : ""}
+    ${(c.history || []).length > 1 ? `<h2 style="margin-top:14px">Recent sessions</h2><div class="small">${c.history.slice(0, 10).map((h) => `${esc(h.session)}: ${h.score ?? "–"}${h.leader ? " · Leader" : ""} · ${esc((STATE_TXT[h.state] || STATE_TXT.unknown)[0])}`).join("<br>")}</div>` : ""}
+    <div class="cardbox"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Share card</h2><span class="spacer"></span>
+      <div class="seg" id="cardTheme"><button data-v="dark" class="sel">Dark</button><button data-v="light">Light</button></div>
+      <button id="dlCard">Download PNG</button><button id="cpCard">Copy image</button></div>
+      <canvas id="card" width="1080" height="1350" style="margin-top:8px"></canvas></div>`;
+  $("#over").classList.add("show"); $("#drawer").classList.add("show");
+  $("#close").onclick = closeCard;
+  $$("#cardTheme button").forEach((btn) => btn.onclick = () => { $$("#cardTheme button").forEach((x) => x.classList.toggle("sel", x === btn)); drawCard(c); });
+  $("#dlCard").onclick = () => { const a = document.createElement("a"); a.href = $("#card").toDataURL("image/png"); a.download = c.ticker + "_growth_card.png"; a.click(); };
+  $("#cpCard").onclick = () => $("#card").toBlob((bl) => { try { navigator.clipboard.write([new ClipboardItem({ "image/png": bl })]); $("#cpCard").textContent = "Copied"; } catch (e) { $("#cpCard").textContent = "Copy not allowed"; } });
+  drawCard(c);
+}
+function closeCard() { $("#over").classList.remove("show"); $("#drawer").classList.remove("show"); CUR = null; }
+$("#over").onclick = closeCard;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCard(); });
+
+/* ---- share card: the dashboard's theme colours and name when it is running; Unusual Whales credited as the data */
+function uwLabel(fb){ return (window.UWBrand && window.UWBrand.label) || fb; }
+function uwPal(base, dark) { return window.UWTheme ? window.UWTheme.pal(base, dark) : base; }
+window.addEventListener("uw-theme", () => { if (CUR) drawCard(CUR); });
+function drawCard(c) {
+  const cv = $("#card"); if (!cv) return;
+  const selDark = $("#cardTheme button.sel");
+  const dark = window.UWTheme && window.UWTheme.single ? document.documentElement.getAttribute("data-theme") === "dark" : !selDark || selDark.dataset.v === "dark";
+  const P = uwPal(dark ? { bg: "#1a1a19", panel: "#232322", ink1: "#ffffff", ink2: "#c3c2b7", ink3: "#898781", line: "#383835", good: "#2fbf4a", bad: "#f0625f", s1: "#3987e5", warn: "#fab219" }
+    : { bg: "#fcfcfb", panel: "#f4f4f1", ink1: "#0b0b0b", ink2: "#52514e", ink3: "#898781", line: "#c3c2b7", good: "#0b8a0b", bad: "#c83232", s1: "#2a78d6", warn: "#eda100" }, dark);
+  const F = (px, w, kind) => `${w} ${px}px ${window.UWTheme ? window.UWTheme.font(kind || "body", "system-ui") : "system-ui, -apple-system, Segoe UI, sans-serif"}`;
+  const x = cv.getContext("2d"); const W = 1080, H = 1350, PAD = 64;
+  x.fillStyle = P.bg; x.fillRect(0, 0, W, H);
+  const T = (s, px, py, col, font, align) => { x.font = font; x.fillStyle = col; x.textAlign = align || "left"; x.fillText(s, px, py); };
+  const fit = (s, maxW, font) => { x.font = font; let t = String(s); while (t.length > 3 && x.measureText(t).width > maxW) t = t.slice(0, -2); return t === String(s) ? t : t.replace(/.$/, "…"); };
+  const wrap2 = (s, maxW, font) => {       // two lines at most, the second ellipsised
+    x.font = font; const words = String(s).split(" "); const out = [""];
+    for (const w of words) { const t = out[out.length - 1] ? out[out.length - 1] + " " + w : w;
+      if (x.measureText(t).width <= maxW || !out[out.length - 1]) out[out.length - 1] = t; else if (out.length < 2) out.push(w); else { out[1] += " " + w; } }
+    if (out[1]) out[1] = fit(out[1], maxW, font); return out; };
+  let y = PAD + 30;
+  T(uwLabel("Growth Leaders").toUpperCase(), PAD, y, P.ink3, F(22, 600, "head"));
+  y += 78; T(c.ticker, PAD, y, P.ink1, F(84, 700, "head"));
+  T(c.score == null ? "–" : String(c.score), W - PAD, y, P.ink1, F(84, 700, "num"), "right");
+  y += 38; T(fit(c.name || c.industry || "", 700, F(26, 400)), PAD, y, P.ink2, F(26, 400)); T("/ 100", W - PAD, y, P.ink3, F(24, 400), "right");
+  if (c.leader) { x.fillStyle = P.s1; x.fillRect(W - PAD - 170, y + 20, 170, 44); T("LEADER", W - PAD - 85, y + 51, "#ffffff", F(24, 700, "head"), "center"); }
+  y += 120;
+  for (const k of KEYS) {
+    const ch = check(c, k);
+    const col = !ch.measured ? P.ink3 : ch.passed ? P.good : P.bad;
+    x.strokeStyle = col; x.lineWidth = 3; x.fillStyle = ch.passed ? col : P.bg;
+    x.beginPath(); x.roundRect ? x.roundRect(PAD, y - 34, 46, 46, 8) : x.rect(PAD, y - 34, 46, 46); x.fill(); x.stroke();
+    T(k, PAD + 23, y - 2, ch.passed ? "#ffffff" : col, F(26, 700, "head"), "center");
+    T(NAMES[k], PAD + 70, y - 12, P.ink1, F(26, 600));
+    wrap2(ch.text || "", W - 2 * PAD - 70, F(20, 400)).forEach((ln, i) => T(ln, PAD + 70, y + 16 + i * 25, P.ink2, F(20, 400)));
+    y += 104;
+  }
+  const b = c.base || {};
+  y += 6; x.fillStyle = P.panel; x.fillRect(PAD, y, W - 2 * PAD, 150);
+  if (b.pivot) {
+    const cols = [["BUY POINT", usd(b.pivot)], ["BUY RANGE", usd(b.buy_from) + "–" + usd(b.buy_to)], ["STOP −8%", usd(b.stop)]];
+    cols.forEach(([l, v], i) => { const cx = PAD + 30 + i * ((W - 2 * PAD - 60) / 3); T(l, cx, y + 50, P.ink3, F(19, 600)); T(v, cx, y + 96, P.ink1, F(32, 700, "num")); });
+    T(fit((STATE_TXT[b.state] || STATE_TXT.unknown)[0] + ": " + (b.text || ""), W - 2 * PAD - 60, F(18, 400)), PAD + 30, y + 132, P.ink2, F(18, 400));
+  } else { T(fit(b.text || "No base.", W - 2 * PAD - 60, F(22, 400)), PAD + 30, y + 84, P.ink2, F(22, 400)); }
+  y = H - 70;
+  x.strokeStyle = P.line; x.lineWidth = 1; x.beginPath(); x.moveTo(PAD, y - 36); x.lineTo(W - PAD, y - 36); x.stroke();
+  T(fit("O'Neil-style checks, our math · Data: Unusual Whales · Not advice", W - 2 * PAD - 200, F(19, 400)), PAD, y, P.ink3, F(19, 400));
+  T(new Date().toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }), W - PAD, y, P.ink3, F(19, 400), "right");
+}
+
+$("#scanBtn").onclick = async () => { $("#scanBtn").disabled = true; await api("/api/scan", {}); setTimeout(load, 1500); };
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swing Desk</title>
+<style>
+/* ---------------------------------------------------------------- tokens */
+:root {
+  color-scheme: light;
+  --surface-1: #fcfcfb;
+  --surface-2: #f4f4f1;
+  --page: #f9f9f7;
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --border-strong: rgba(11,11,11,0.18);
+
+  --s1: #2a78d6;  /* flow    */
+  --s2: #eb6834;  /* oi      */
+  --s3: #1baf7a;  /* dark    */
+  --s4: #eda100;  /* gamma   */
+  --s5: #e87ba4;  /* tech    */
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(11,11,11,.06), 0 4px 12px rgba(11,11,11,.04);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19;
+  --surface-2: #232322;
+  --page: #0d0d0d;
+  --ink-1: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255,255,255,0.10);
+  --border-strong: rgba(255,255,255,0.18);
+
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --s5: #d55181;
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink-1);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1320px; margin: 0 auto; padding: 20px 20px 72px; }
+h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+.mono { font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- header */
+header {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  margin: -20px -20px 20px; padding: 14px 20px;
+}
+.hdr-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand h1 { font-size: 17px; }
+.brand .sub { color: var(--ink-3); font-size: 12px; }
+.spacer { flex: 1 1 auto; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px; font-size: 12px;
+  border: 1px solid var(--border); background: var(--surface-1); color: var(--ink-2);
+  white-space: nowrap;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); flex: none; }
+.dot.ok { background: var(--good); }
+.dot.bad { background: var(--critical); }
+.dot.warn { background: var(--warning); }
+
+button {
+  font: inherit; color: var(--ink-2); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 5px 11px; cursor: pointer; transition: .12s;
+}
+button:hover { border-color: var(--border-strong); color: var(--ink-1); }
+button.on { background: var(--ink-1); color: var(--page); border-color: var(--ink-1); }
+
+/* regime strip */
+.regime {
+  display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+  margin-top: 12px; padding: 10px 14px;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+}
+.regime .item { display: flex; flex-direction: column; gap: 1px; }
+.regime .lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.regime .val { font-size: 15px; font-weight: 600; }
+
+/* filters */
+.filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 16px 0 12px; }
+.filters .grp { display: flex; gap: 4px; padding: 3px; background: var(--surface-2); border-radius: 10px; }
+.filters .grp button { border: 0; background: transparent; padding: 4px 10px; border-radius: 7px; font-size: 12.5px; }
+.filters .grp button.on { background: var(--surface-1); color: var(--ink-1); box-shadow: var(--shadow); }
+.filters label { font-size: 12px; color: var(--ink-3); }
+input[type=range] { accent-color: var(--s1); width: 110px; vertical-align: middle; }
+
+/* ---------------------------------------------------------------- cards */
+.section-title {
+  display: flex; align-items: baseline; gap: 10px; margin: 26px 0 12px;
+}
+.section-title h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-2); }
+.section-title .count { font-size: 12px; color: var(--ink-3); }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 14px; }
+.card {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 14px; padding: 15px; box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
+}
+.card.bull::before { background: var(--good); }
+.card.bear::before { background: var(--critical); }
+
+.card-hd { display: flex; align-items: flex-start; gap: 12px; }
+.tkr { font-size: 20px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }
+.tkr-sub { font-size: 11.5px; color: var(--ink-3); margin-top: 2px;
+           max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.px { text-align: right; margin-left: auto; }
+.px .p { font-size: 16px; font-weight: 600; }
+.px .c { font-size: 12px; }
+.up { color: var(--good); } .dn { color: var(--critical); }
+
+.badges { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 12px; }
+.badge {
+  font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border);
+  color: var(--ink-2); background: var(--surface-2);
+}
+.badge.dir-bull { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+.badge.dir-bear { color: var(--critical); border-color: color-mix(in srgb, var(--critical) 40%, transparent); }
+.badge.hz { color: var(--s1); border-color: color-mix(in srgb, var(--s1) 40%, transparent); }
+.badge.hold-strong { color: var(--s3); border-color: color-mix(in srgb, var(--s3) 45%, transparent); }
+.badge.hold-new { color: var(--ink-3); border-style: dashed; }
+
+/* score + spark row */
+.hero { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.score-ring { flex: none; position: relative; width: 62px; height: 62px; }
+.score-ring .n {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 18px; font-weight: 650; letter-spacing: -0.03em;
+}
+.spark-wrap { flex: 1 1 auto; min-width: 0; }
+.spark-lbl { font-size: 10.5px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+
+/* component bars */
+.comps { display: flex; flex-direction: column; gap: 5px; margin: 12px 0; }
+.comp { display: grid; grid-template-columns: 52px 1fr 44px; align-items: center; gap: 8px; }
+.comp .cl { font-size: 11px; color: var(--ink-2); }
+.comp .cv { font-size: 11px; color: var(--ink-3); text-align: right; font-variant-numeric: tabular-nums; }
+.bar { position: relative; height: 9px; background: var(--surface-2); border-radius: 3px; }
+.bar .mid { position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: var(--axis); }
+.bar .fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+
+/* levels */
+.levels {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border);
+  border-radius: 9px; overflow: hidden; margin: 12px 0 10px;
+}
+.lv { background: var(--surface-1); padding: 7px 9px; }
+.lv .k { font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.lv .v { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+         margin-top: 1px; white-space: nowrap; }
+
+.chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.chip {
+  font-size: 11px; padding: 2.5px 7px; border-radius: 5px;
+  background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--border);
+}
+.chip.warn { color: var(--warning); border-color: color-mix(in srgb, var(--warning) 35%, transparent); }
+
+.card-foot { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }
+.card-foot summary {
+  cursor: pointer; font-size: 11.5px; color: var(--ink-3); list-style: none;
+  display: flex; align-items: center; gap: 5px;
+}
+.card-foot summary::-webkit-details-marker { display: none; }
+.card-foot summary::before { content: "▸"; transition: .15s; display: inline-block; }
+.card-foot details[open] summary::before { transform: rotate(90deg); }
+.evidence { margin-top: 8px; font-size: 11.5px; color: var(--ink-2); }
+.evidence table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.evidence th { text-align: left; font-weight: 500; color: var(--ink-3); font-size: 10px;
+               text-transform: uppercase; letter-spacing: .05em; padding: 3px 6px 3px 0; }
+.evidence td { padding: 2.5px 6px 2.5px 0; border-top: 1px solid var(--grid); }
+.evidence .h { margin: 8px 0 3px; font-size: 10px; text-transform: uppercase;
+               letter-spacing: .06em; color: var(--ink-3); }
+
+/* tapes + tables */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+.panel { background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
+         box-shadow: var(--shadow); overflow: hidden; }
+.panel-hd { padding: 11px 14px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 8px; }
+.panel-hd h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-2); }
+.panel-body { max-height: 340px; overflow: auto; }
+table.tape { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+table.tape th { position: sticky; top: 0; background: var(--surface-1); z-index: 1;
+                text-align: left; font-weight: 500; color: var(--ink-3); font-size: 10px;
+                text-transform: uppercase; letter-spacing: .05em; padding: 6px 10px;
+                border-bottom: 1px solid var(--border); }
+table.tape td { padding: 5px 10px; border-bottom: 1px solid var(--grid); }
+table.tape tbody tr:hover { background: var(--surface-2); }
+table.tape .t { font-weight: 600; }
+.tbl-scroll { overflow-x: auto; }
+
+.empty { padding: 34px 20px; text-align: center; color: var(--ink-3); font-size: 13px; }
+.err {
+  padding: 12px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 14px;
+  background: color-mix(in srgb, var(--critical) 10%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--critical) 35%, transparent);
+  color: var(--ink-1);
+}
+.note { font-size: 11.5px; color: var(--ink-3); margin-top: 22px; line-height: 1.55;
+        border-top: 1px solid var(--border); padding-top: 12px; }
+
+/* tooltip */
+#tip {
+  position: fixed; z-index: 100; pointer-events: none; opacity: 0; transition: opacity .1s;
+  background: var(--surface-1); border: 1px solid var(--border-strong);
+  border-radius: 8px; padding: 7px 10px; font-size: 11.5px; color: var(--ink-1);
+  box-shadow: var(--shadow); max-width: 260px;
+}
+#tip .tt { font-weight: 600; margin-bottom: 2px; }
+#tip .td { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------------------- share card */
+.share-btn { margin-left: auto; font-size: 11.5px; padding: 2px 9px; white-space: nowrap; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; z-index: 80; padding: 20px; overflow: auto; }
+.modal[data-open="true"] { display: flex; align-items: flex-start; justify-content: center; }
+.sheet { background: var(--page); border: 1px solid var(--border-strong); border-radius: 12px; padding: 18px;
+         max-width: 640px; width: 100%; display: flex; flex-direction: column; gap: 12px; margin-block: auto; }
+.sheet h2 { font-size: 17px; }
+.sheet .opts, .sheet .actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+#shot { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 10px; display: block; }
+.sheet textarea { width: 100%; min-height: 78px; font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+                  background: var(--surface-1); color: var(--ink-1); border: 1px solid var(--border); border-radius: 8px; padding: 9px; resize: vertical; }
+.sheet .lbl { font-size: 12px; color: var(--ink-3); margin-bottom: 4px; }
+.sheet .hint { font-size: 12px; color: var(--ink-3); }
+@media (max-width: 520px) { .modal { padding: 10px; } .sheet { padding: 12px; } }
+</style>
+<script src="http://127.0.0.1:8700/theme.js?desk=swing"></script>
+</head>
+<body>
+<div id="tip"></div>
+<div class="modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+  <div class="sheet">
+    <h2 id="shareTitle">Share card</h2>
+    <div class="opts">
+      <button id="optDetail" class="on" type="button">Detailed</button>
+      <button id="optAnon" type="button">No ticker</button>
+      <span style="width:10px"></span>
+      <button id="optDark" class="on" type="button">Dark</button>
+      <button id="optLight" type="button">Light</button>
+    </div>
+    <canvas id="shot" width="1080" height="1200"></canvas>
+    <div><div class="lbl">Caption (edit freely, it isn't part of the image)</div><textarea id="shareCap" aria-label="Caption"></textarea></div>
+    <div class="actions">
+      <button id="btnCopy" type="button">Copy image</button>
+      <button id="btnDl" type="button">Download PNG</button>
+      <button id="btnCapCopy" type="button">Copy caption</button>
+      <button id="btnClose" type="button">Close</button>
+      <span class="hint" id="shareHint"></span>
+    </div>
+  </div>
+</div>
+<div class="wrap">
+
+<header>
+  <div class="hdr-top">
+    <div class="brand">
+      <h1 data-uw-name>Swing Desk</h1>
+      <span class="sub">Unusual Whales confluence scanner</span>
+    </div>
+    <div class="spacer"></div>
+    <span class="pill"><span class="dot" id="healthDot"></span><span id="healthTxt">connecting…</span></span>
+    <span class="pill" id="discordPill" hidden></span>
+    <span class="pill mono" id="histPill" hidden></span>
+    <span class="pill mono" id="clock">—</span>
+    <button id="themeBtn" title="Toggle theme">◐</button>
+    <button id="refreshBtn">Refresh</button>
+  </div>
+
+  <div class="regime" id="regime">
+    <div class="item"><span class="lbl">Market tide</span><span class="val" id="tideVal">—</span></div>
+    <div class="item"><span class="lbl">Net premium</span><span class="val mono" id="tideNet">—</span></div>
+    <div style="flex:1 1 200px;min-width:160px">
+      <div class="lbl" style="margin-bottom:2px">Intraday net call − net put premium</div>
+      <svg id="tideChart" width="100%" height="34" preserveAspectRatio="none" role="img"
+           aria-label="Market tide intraday net premium"></svg>
+    </div>
+    <div class="item"><span class="lbl">Scanned</span><span class="val mono" id="uniVal">—</span></div>
+    <div class="item"><span class="lbl">Alerts</span><span class="val mono" id="alertCount">—</span></div>
+  </div>
+</header>
+
+<div id="errBox"></div>
+<div id="marketBox"></div>
+
+<div class="filters">
+  <div class="grp" id="dirFilter">
+    <button data-v="all" class="on">All</button>
+    <button data-v="BULL">Bullish</button>
+    <button data-v="BEAR">Bearish</button>
+  </div>
+  <div class="grp" id="hzFilter">
+    <button data-v="all" class="on">Any hold time</button>
+    <button data-v="SHORT">2–10d</button>
+    <button data-v="SWING">2–6w</button>
+    <button data-v="POSITION">2mo+</button>
+  </div>
+  <label for="minScore">Min score</label>
+  <input type="range" id="minScore" min="0" max="80" step="5" value="0">
+  <span class="mono" id="minScoreVal" style="font-size:12px;color:var(--ink-2)">0</span>
+  <div class="spacer"></div>
+  <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
+    <input type="checkbox" id="showWatch"> Show below-threshold watchlist
+  </label>
+</div>
+
+<div class="section-title">
+  <h2>Swing alerts</h2>
+  <span class="count" id="alertsSub">—</span>
+</div>
+<div class="cards" id="alerts"></div>
+<div class="empty" id="alertsEmpty" hidden>
+  No setups currently clear the confluence gate. That is a normal reading — the model
+  requires at least three independent signals to agree before it calls anything.
+</div>
+
+<div id="watchSection" hidden>
+  <div class="section-title"><h2>Watchlist</h2><span class="count" id="watchSub"></span></div>
+  <div class="panel"><div class="panel-body tbl-scroll">
+    <table class="tape" id="watchTbl"></table>
+  </div></div>
+</div>
+
+<div class="section-title"><h2>Live tape</h2><span class="count">Refreshing every 20s</span></div>
+<div class="split">
+  <div class="panel">
+    <div class="panel-hd"><h3>Options flow alerts</h3><span class="spacer"></span>
+      <span class="pill" id="faCount" style="font-size:11px">—</span></div>
+    <div class="panel-body tbl-scroll"><table class="tape" id="faTbl"></table></div>
+  </div>
+  <div class="panel">
+    <div class="panel-hd"><h3>Dark pool blocks</h3><span class="spacer"></span>
+      <span class="pill" id="dpCount" style="font-size:11px">—</span></div>
+    <div class="panel-body tbl-scroll"><table class="tape" id="dpTbl"></table></div>
+  </div>
+</div>
+
+<p class="note">
+  <strong>How a score is built.</strong> Five independent signals each resolve to −1…+1 and are
+  weighted: options flow 30 (net directional premium and ask-side conviction), open-interest build 20
+  (positions actually opened, not scalped), dark pool 15 (block premium vs the day's notional, leaning
+  by print vs NBBO mid), gamma 15 (spot vs flip, room to the call/put wall), technicals 20 (trend
+  stack, RSI, pullback-in-trend). Haircuts apply for earnings inside the horizon, IV rank above 85,
+  and thin relative volume. A setup is only surfaced when at least three signals agree in direction
+  and reward:risk clears 1.3.<br><br>
+  This is descriptive aggregation of market data, not trade advice or a recommendation. Levels are
+  arithmetic from ATR and gamma walls, not predictions. Verify everything against your own broker
+  data before risking capital.
+</p>
+
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ state */
+const S = {
+  scan: null, tape: null, tide: null,
+  filters: { dir: "all", hz: "all", minScore: 0, showWatch: false },
+  timers: {},
+  halted: false,   // set when there is nothing to poll (page opened off disk)
+};
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+/* ---------------------------------------------------------------- format */
+const fmtUsd = (n) => {
+  if (n == null || !isFinite(n)) return "—";
+  const a = Math.abs(n), s = n < 0 ? "−" : "";
+  if (a >= 1e12) return `${s}$${(a / 1e12).toFixed(2)}T`;
+  if (a >= 1e9)  return `${s}$${(a / 1e9).toFixed(2)}B`;
+  if (a >= 1e6)  return `${s}$${(a / 1e6).toFixed(1)}M`;
+  if (a >= 1e3)  return `${s}$${(a / 1e3).toFixed(0)}K`;
+  return `${s}$${a.toFixed(0)}`;
+};
+const fmtNum = (n, d = 2) => (n == null || !isFinite(n)) ? "—" : Number(n).toFixed(d);
+const fmtInt = (n) => (n == null || !isFinite(n)) ? "—" : Math.round(n).toLocaleString();
+const fmtPct = (n, d = 1) => (n == null || !isFinite(n)) ? "—" : `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(d)}%`;
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const timeOf = (iso) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return isNaN(d) ? "—" : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+/* --------------------------------------------------------------- tooltip */
+const tip = $("#tip");
+function showTip(e, title, detail) {
+  tip.innerHTML = `<div class="tt">${esc(title)}</div><div class="td">${detail}</div>`;
+  tip.style.opacity = "1";
+  moveTip(e);
+}
+function moveTip(e) {
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.style.opacity = "0"; }
+document.addEventListener("mousemove", (e) => { if (tip.style.opacity === "1") moveTip(e); });
+
+/* ------------------------------------------------------------- sparkline */
+function sparkline(vals, w = 190, h = 34) {
+  if (!vals || vals.length < 2) return `<svg width="${w}" height="${h}"></svg>`;
+  const min = Math.min(...vals), max = Math.max(...vals), rng = (max - min) || 1;
+  const up = vals[vals.length - 1] >= vals[0];
+  const col = up ? "var(--good)" : "var(--critical)";
+  const pts = vals.map((v, i) => {
+    const x = (i / (vals.length - 1)) * (w - 2) + 1;
+    const y = h - 3 - ((v - min) / rng) * (h - 6);
+    return [x, y];
+  });
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join("");
+  const area = `${line}L${pts[pts.length - 1][0].toFixed(1)},${h}L${pts[0][0].toFixed(1)},${h}Z`;
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"
+    role="img" aria-label="40-day close, ${up ? "up" : "down"} over the window">
+    <path d="${area}" fill="${col}" opacity="0.10"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="2"
+          stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${pts[pts.length - 1][0].toFixed(1)}" cy="${pts[pts.length - 1][1].toFixed(1)}"
+            r="2.5" fill="${col}"/>
+  </svg>`;
+}
+
+/* ------------------------------------------------------------- score ring */
+function scoreRing(score) {
+  const mag = Math.min(Math.abs(score), 100) / 100;
+  const R = 26, C = 2 * Math.PI * R;
+  const col = score >= 0 ? "var(--good)" : "var(--critical)";
+  return `<div class="score-ring">
+    <svg width="62" height="62" viewBox="0 0 62 62" role="img"
+         aria-label="Composite score ${Math.round(score)} out of 100">
+      <circle cx="31" cy="31" r="${R}" fill="none" stroke="var(--surface-2)" stroke-width="5"/>
+      <circle cx="31" cy="31" r="${R}" fill="none" stroke="${col}" stroke-width="5"
+              stroke-linecap="round" stroke-dasharray="${(C * mag).toFixed(1)} ${C.toFixed(1)}"
+              transform="rotate(-90 31 31)"/>
+    </svg>
+    <div class="n" style="color:${col}">${Math.abs(Math.round(score))}</div>
+  </div>`;
+}
+
+/* ------------------------------------------------------ component bars */
+const COMP_META = {
+  flow:  { label: "Flow",   color: "var(--s1)", blurb: "Net directional option premium and ask-side conviction" },
+  oi:    { label: "OI",     color: "var(--s2)", blurb: "Day-over-day open interest build: calls vs puts" },
+  dark:  { label: "Dark",   color: "var(--s3)", blurb: "Dark pool block premium vs the day's notional, leaning by print vs mid" },
+  gamma: { label: "Gamma",  color: "var(--s4)", blurb: "Spot vs gamma flip, and room between the put wall and call wall" },
+  tech:  { label: "Tech",   color: "var(--s5)", blurb: "Trend stack, RSI position, pullback-in-trend" },
+};
+
+function compDetail(key, c) {
+  const d = c.detail || {};
+  const L = [];
+  const add = (k, v) => { if (v !== undefined && v !== null && v !== "") L.push(`${k}: ${v}`); };
+  if (key === "flow") {
+    add("Net directional", fmtUsd(d.directional));
+    add("of gross", fmtUsd(d.gross));
+    if (d.skew != null) add("Ask-side skew", fmtNum(d.skew, 2));
+    if (d.rel_vol != null) add("Rel. option vol", `${fmtNum(d.rel_vol, 2)}×`);
+  } else if (key === "oi") {
+    add("Call OI", `${fmtInt(d.call_oi)} (${fmtPct((d.call_oi_chg || 0) * 100)})`);
+    add("Put OI", `${fmtInt(d.put_oi)} (${fmtPct((d.put_oi_chg || 0) * 100)})`);
+  } else if (key === "dark") {
+    if (!d.dp_premium) return "No qualifying dark pool prints on the tape.";
+    add("Block premium", fmtUsd(d.dp_premium));
+    add("Prints", fmtInt(d.dp_prints));
+    add("Lean", d.dp_lean > 0 ? "above mid (buyers)" : "below mid (sellers)");
+  } else if (key === "gamma") {
+    add("Call wall", d.call_wall ? `$${fmtNum(d.call_wall)}` : null);
+    add("Put wall", d.put_wall ? `$${fmtNum(d.put_wall)}` : null);
+    add("Gamma flip", d.gamma_flip ? `$${fmtNum(d.gamma_flip)}` : null);
+  } else if (key === "tech") {
+    add("RSI(14)", fmtNum(d.rsi14, 1));
+    add("SMA20 / SMA50", d.sma20 ? `$${fmtNum(d.sma20)} / $${fmtNum(d.sma50)}` : null);
+    add("ATR(14)", d.atr14 ? `$${fmtNum(d.atr14)}` : null);
+    if (d.pullback) L.push("Pullback inside trend");
+  }
+  return L.length ? L.join("<br>") : "No contribution.";
+}
+
+function compBars(a) {
+  return `<div class="comps">` + Object.entries(COMP_META).map(([k, m]) => {
+    const c = a.components[k] || { value: 0, contribution: 0 };
+    const pct = Math.min(Math.abs(c.value), 1) * 50;
+    const left = c.value >= 0 ? 50 : 50 - pct;
+    return `<div class="comp" data-comp="${k}" data-tkr="${esc(a.ticker)}">
+      <span class="cl">${m.label}</span>
+      <span class="bar"><span class="mid"></span>
+        <span class="fill" style="left:${left}%;width:${pct}%;background:${m.color}"></span></span>
+      <span class="cv">${c.contribution >= 0 ? "+" : "−"}${Math.abs(c.contribution).toFixed(0)}</span>
+    </div>`;
+  }).join("") + `</div>`;
+}
+
+/* ------------------------------------------------------- persistence badge
+   A setup that has held across many scans is worth more than one that just
+   blinked on. This turns the flicker into readable information. */
+function persistBadge(a) {
+  const p = a.persistence;
+  if (!p || !p.streak) return "";
+  const strong = p.streak >= 3;
+  const cls = strong ? "hold-strong" : "hold-new";
+  const label = p.streak === 1 ? "just appeared" : `held ${p.streak} scans`;
+  const seen = p.window > 1 ? ` · ${p.held}/${p.window}` : "";
+  const posted = p.notified_at ? " · posted" : "";
+  return `<span class="badge ${cls}" title="Held ${p.streak} consecutive scans.
+Seen in ${p.held} of the last ${p.window} scans.
+First seen ${p.first_seen ? new Date(p.first_seen).toLocaleString() : "—"}.">
+    ${label}${seen}${posted}</span>`;
+}
+
+/* ------------------------------------------------------------ alert card */
+function alertCard(a) {
+  const dir = a.direction === "BULL";
+  const ctx = a.context, lv = a.levels;
+  const chips = [];
+  if (ctx.iv_rank) chips.push(`<span class="chip">IV rank ${fmtNum(ctx.iv_rank, 0)}</span>`);
+  if (ctx.relative_volume) chips.push(`<span class="chip">RVOL ${fmtNum(ctx.relative_volume, 2)}×</span>`);
+  if (a.sector) chips.push(`<span class="chip">${esc(a.sector)}</span>`);
+  if (ctx.earnings_in != null && ctx.earnings_in >= 0)
+    chips.push(`<span class="chip${ctx.earnings_in <= 45 ? " warn" : ""}">ER in ${ctx.earnings_in}d</span>`);
+  (a.penalties || []).forEach(p => chips.push(`<span class="chip warn">⚠ ${esc(p)}</span>`));
+
+  const fa = (a.flow_alerts || []).slice(0, 5);
+  const dp = (a.dark_prints || []).slice(0, 5);
+
+  return `<article class="card ${dir ? "bull" : "bear"}">
+    <div class="card-hd">
+      <div>
+        <div class="tkr">${esc(a.ticker)}</div>
+        <div class="tkr-sub">${esc(a.name)}</div>
+      </div>
+      <div class="px">
+        <div class="p mono">$${fmtNum(a.price)}</div>
+        <div class="c mono ${a.change_pct >= 0 ? "up" : "dn"}">${fmtPct(a.change_pct)}</div>
+      </div>
+    </div>
+
+    <div class="badges">
+      <span class="badge dir-${dir ? "bull" : "bear"}">${dir ? "▲ Bullish" : "▼ Bearish"}</span>
+      <span class="badge hz">⏱ ${esc(a.horizon.detail || a.horizon.label)}</span>
+      <span class="badge" title="The signals that carried this score (real size, same direction), biggest first">${esc(drivers(a))}</span>
+      ${persistBadge(a)}
+      <button class="share-btn" type="button" data-share="${esc(a.ticker)}" title="Make an image of this setup to post">Share card</button>
+    </div>
+
+    <div class="hero">
+      ${scoreRing(a.score)}
+      <div class="spark-wrap">
+        <div class="spark-lbl">40-day close</div>
+        ${sparkline(a.spark)}
+      </div>
+    </div>
+
+    ${compBars(a)}
+
+    <div class="levels">
+      <div class="lv"><div class="k">Entry</div><div class="v" style="font-size:12px">${fmtNum(lv.entry_low)}–${fmtNum(lv.entry_high)}</div></div>
+      <div class="lv"><div class="k">Stop</div><div class="v dn">${fmtNum(lv.stop)}</div></div>
+      <div class="lv"><div class="k">Target</div><div class="v up">${fmtNum(lv.target)}</div></div>
+      <div class="lv"><div class="k">Reward:risk</div><div class="v">${fmtNum(lv.rr, 2)}</div></div>
+    </div>
+
+    <div class="chips">
+      <span class="chip">ATR ${fmtNum(lv.atr14)}</span>${chips.join("")}
+    </div>
+
+    <div class="card-foot"><details>
+      <summary>Evidence — ${fa.length} flow alert${fa.length === 1 ? "" : "s"}, ${dp.length} block${dp.length === 1 ? "" : "s"}</summary>
+      <div class="evidence">
+        ${fa.length ? `<div class="h">Option flow alerts</div><table>
+          <tr><th>Contract</th><th>DTE</th><th>Prem</th><th>Vol/OI</th><th>Rule</th></tr>
+          ${fa.map(f => `<tr>
+            <td>${fmtNum(f.strike, 0)}${f.type === "call" ? "C" : "P"} ${esc((f.expiry || "").slice(5))}</td>
+            <td>${f.dte ?? "—"}</td>
+            <td>${fmtUsd(f.premium)}</td>
+            <td>${fmtNum(f.vol_oi, 1)}</td>
+            <td>${esc(f.rule)}${f.sweep ? " ·sweep" : ""}${f.opening ? " ·open" : ""}</td>
+          </tr>`).join("")}
+        </table>` : ""}
+        ${dp.length ? `<div class="h">Dark pool blocks</div><table>
+          <tr><th>Time</th><th>Size</th><th>Price</th><th>Premium</th><th>Lean</th></tr>
+          ${dp.map(p => `<tr>
+            <td>${timeOf(p.executed_at)}</td>
+            <td>${fmtInt(p.size)}</td>
+            <td>${fmtNum(p.price)}</td>
+            <td>${fmtUsd(p.premium)}</td>
+            <td class="${p.lean >= 0 ? "up" : "dn"}">${p.lean >= 0 ? "above mid" : "below mid"}</td>
+          </tr>`).join("")}
+        </table>` : ""}
+        ${(!fa.length && !dp.length) ? `<div style="color:var(--ink-3)">
+          Score is carried by the screener-wide signals (flow, OI, gamma, technicals);
+          no individual alerts or blocks on the current tape.</div>` : ""}
+        <div class="h">Levels derivation</div>
+        <div style="color:var(--ink-2)">
+          Call wall ${lv.call_wall ? "$" + fmtNum(lv.call_wall) : "n/a"} ·
+          Put wall ${lv.put_wall ? "$" + fmtNum(lv.put_wall) : "n/a"} ·
+          Gamma flip ${lv.gamma_flip ? "$" + fmtNum(lv.gamma_flip) : "n/a"}<br>
+          Horizon inferred from ${a.horizon.src === "flow"
+            ? `median ${a.horizon.days}-day expiry across this ticker's flow alerts`
+            : a.horizon.src === "atr"
+              ? `distance to target at ${fmtNum(lv.atr14)} ATR/day (~${a.horizon.days}d)`
+              : "model default"}.
+        </div>
+      </div>
+    </details></div>
+  </article>`;
+}
+
+/* ------------------------------------------------------------ share card
+   Drawn on a canvas (deterministic, its own type scale), measured first and
+   then painted, because resizing a canvas clears it. "No ticker" hides the
+   name and shows the levels as distance from the price instead of dollars. */
+const SHARE = { a: null, detail: true, dark: true };
+const SP = {
+  dark:  { bg: "#1a1a19", panel: "#232322", ink1: "#ffffff", ink2: "#c3c2b7", ink3: "#898781", grid: "#2c2c2a",
+           line: "rgba(255,255,255,.12)", good: "#0ca30c", bad: "#d03b3b", warn: "#fab219",
+           s: { flow: "#3987e5", oi: "#d95926", dark: "#199e70", gamma: "#c98500", tech: "#d55181" } },
+  light: { bg: "#fcfcfb", panel: "#f4f4f1", ink1: "#0b0b0b", ink2: "#52514e", ink3: "#898781", grid: "#e1e0d9",
+           line: "rgba(11,11,11,.12)", good: "#0ca30c", bad: "#d03b3b", warn: "#c98500",
+           s: { flow: "#2a78d6", oi: "#eb6834", dark: "#1baf7a", gamma: "#eda100", tech: "#e87ba4" } },
+};
+const SW = 1080, SPAD = 64;
+const SHARE_LABELS = { flow: "Options flow", oi: "Open-interest change", dark: "Dark pool", gamma: "Dealer gamma", tech: "Chart" };
+
+function shareLevels(a, detail) {
+  const lv = a.levels || {}, px = a.price;
+  const rel = (v) => (v == null || !px) ? "—" : fmtPct((v / px - 1) * 100);
+  return detail
+    ? [["Entry", `$${fmtNum(lv.entry_low)}–${fmtNum(lv.entry_high)}`, null], ["Stop", `$${fmtNum(lv.stop)}`, "bad"],
+       ["Target", `$${fmtNum(lv.target)}`, "good"], ["Reward:risk", fmtNum(lv.rr, 2), null]]
+    : [["Entry", `${rel(lv.entry_low)} to ${rel(lv.entry_high)}`, null], ["Stop", rel(lv.stop), "bad"],
+       ["Target", rel(lv.target), "good"], ["Reward:risk", fmtNum(lv.rr, 2), null]];
+}
+
+function drawShare(x, a, P, detail, paint, H) {
+  const F = (sz, w) => { x.font = `${w || 400} ${sz}px ${uwFont(sz, 'system-ui,-apple-system,"Segoe UI",sans-serif')}`; };
+  const T = (t, px_, py, col, align) => { if (!paint) return; x.textAlign = align || "left"; x.fillStyle = col; x.fillText(t, px_, py); x.textAlign = "left"; };
+  const rr = (px_, py, w, h, r) => { r = Math.min(r, w / 2, h / 2); x.beginPath(); x.moveTo(px_ + r, py); x.arcTo(px_ + w, py, px_ + w, py + h, r);
+    x.arcTo(px_ + w, py + h, px_, py + h, r); x.arcTo(px_, py + h, px_, py, r); x.arcTo(px_, py, px_ + w, py, r); x.closePath(); };
+  const rule = (yy) => { if (paint) { x.strokeStyle = P.line; x.lineWidth = 1; x.beginPath(); x.moveTo(SPAD, yy); x.lineTo(SW - SPAD, yy); x.stroke(); } };
+  const bull = a.direction === "BULL", dcol = bull ? P.good : P.bad;
+  if (paint) { x.fillStyle = P.bg; x.fillRect(0, 0, SW, H); x.textBaseline = "alphabetic"; }
+  let y = 70;
+  F(20, 600); T("SWING SETUP", SPAD, y, P.ink3);
+  F(20, 400); T(new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }), SW - SPAD, y, P.ink3, "right");
+  y += 86;
+  // ticker (or sector) left, score right
+  const title = detail ? a.ticker : `A ${(a.sector || "US equity").toLowerCase()} name`;
+  F(detail ? 84 : 52, 700); T(title, SPAD, y, P.ink1);
+  F(84, 700); const sc = String(Math.abs(Math.round(a.score))); T(sc, SW - SPAD - 78, y, dcol, "right");
+  F(26, 500); T("/ 100", SW - SPAD, y, P.ink3, "right");
+  y += 42;
+  F(26, 700); T(bull ? "▲ BULLISH" : "▼ BEARISH", SPAD, y, dcol);
+  const hz = (a.horizon && (a.horizon.detail || a.horizon.label)) || "";
+  F(22, 400); T(`hold ${hz}`, SW - SPAD, y, P.ink3, "right");
+  y += 34;
+  F(21, 400);
+  const sub = detail ? `${a.name || ""}${a.sector ? "  ·  " + a.sector : ""}  ·  $${fmtNum(a.price)} (${fmtPct(a.change_pct)})`
+                     : `${a.agreeing || (a.drivers || []).length} of 5 signals agree`;
+  T(sub.replace(/^\s+·\s+/, ""), SPAD, y, P.ink2);
+  y += 30;
+  const p = a.persistence || {};
+  F(21, 400); T(`Driven by ${drivers(a)}${p.streak ? `  ·  held ${p.streak} scan${p.streak === 1 ? "" : "s"}` : ""}`, SPAD, y, P.ink2);
+  y += 44; rule(y); y += 46;
+
+  // the five signals, on one diverging scale
+  F(20, 600); T("THE FIVE SIGNALS", SPAD, y, P.ink3);
+  F(17, 400); T("◀ bearish · bullish ▶", SW - SPAD, y, P.ink3, "right");
+  y += 22;
+  const LBL = 250, NUM = 120, bx = SPAD + LBL, bw = SW - 2 * SPAD - LBL - NUM, mid = bx + bw / 2;
+  Object.keys(COMP_META).forEach((k) => {
+    const c = (a.components || {})[k] || { value: 0, contribution: 0, weight: 0 };
+    const cy = y + 30;
+    F(22, 500); T(SHARE_LABELS[k], SPAD, cy + 8, P.ink1);
+    if (paint) {
+      x.fillStyle = P.panel; rr(bx, cy - 9, bw, 18, 9); x.fill();
+      const v = Math.max(-1, Math.min(1, c.value || 0)), w = Math.abs(v) * bw / 2;
+      x.fillStyle = P.s[k]; if (w > 0.5) { rr(v >= 0 ? mid : mid - w, cy - 9, Math.max(w, 4), 18, 9); x.fill(); }
+      x.fillStyle = P.ink3; x.fillRect(mid - 1, cy - 15, 2, 30);
+    }
+    F(22, 600); T(`${(c.contribution || 0) >= 0 ? "+" : "−"}${Math.abs(c.contribution || 0).toFixed(0)}`, SW - SPAD - 46, cy + 8, P.ink1, "right");
+    F(17, 400); T(`/${Math.round(c.weight || 0)}`, SW - SPAD, cy + 8, P.ink3, "right");
+    y += 52;
+  });
+  y += 30; rule(y); y += 46;
+
+  // the setup
+  F(20, 600); T(detail ? "THE SETUP" : "THE SETUP (distance from price)", SPAD, y, P.ink3);
+  y += 20;
+  const L = shareLevels(a, detail), gw = (SW - 2 * SPAD - 3 * 16) / 4;
+  L.forEach(([k, v, col], i) => {
+    const gx = SPAD + i * (gw + 16);
+    if (paint) { x.fillStyle = P.panel; rr(gx, y, gw, 104, 10); x.fill(); }
+    F(18, 400); T(k, gx + 18, y + 32, P.ink3);
+    F(v.length > 12 ? 22 : 30, 700); T(v, gx + 18, y + 76, col ? P[col] : P.ink1);
+  });
+  y += 104 + 34;
+
+  // context and haircuts
+  const ctx = a.context || {}, notes = [];
+  (a.penalties || []).forEach((t) => notes.push([`⚠ ${t}`, P.warn]));
+  if (ctx.earnings_in != null && ctx.earnings_in >= 0) notes.push([`Earnings in ${ctx.earnings_in} days`, ctx.earnings_in <= 45 ? P.warn : P.ink2]);
+  if (ctx.iv_rank) notes.push([`IV rank ${fmtNum(ctx.iv_rank, 0)}`, P.ink2]);
+  if (ctx.relative_volume) notes.push([`Rel. volume ${fmtNum(ctx.relative_volume, 2)}×`, P.ink2]);
+  if (a.levels && a.levels.atr14 && detail) notes.push([`ATR $${fmtNum(a.levels.atr14)}`, P.ink2]);
+  if (notes.length) {
+    F(20, 400); let cx = SPAD;
+    notes.forEach(([t, col]) => {
+      const w = x.measureText(t).width + 30;
+      if (cx + w > SW - SPAD) { cx = SPAD; y += 50; }
+      if (paint) { x.strokeStyle = col; x.lineWidth = 1.5; rr(cx, y, w, 38, 19); x.stroke(); }
+      T(t, cx + 15, y + 26, col); cx += w + 10;
+    });
+    y += 38 + 36;
+  }
+
+  // footer: provenance travels with the image
+  rule(y); y += 38;
+  F(20, 600); T(uwLabel("Swing Desk"), SPAD, y, P.ink2);
+  F(20, 400); T(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), SW - SPAD, y, P.ink3, "right");
+  y += 28;
+  F(17, 400); T("Data: Unusual Whales API · five signals, weights reasoned not fitted · Educational use only. Not financial advice.", SPAD, y, P.ink3);
+  return y + 40;
+}
+
+/* theme engine (dashboard): card colours and fonts follow the active theme; Paper = unchanged */
+function uwLabel(fb){ return (window.UWBrand && window.UWBrand.label) || fb; }  /* name from the dashboard: "Deep Current · Valuation" */
+function uwPal(base, dark) { return window.UWTheme ? window.UWTheme.pal(base, dark) : base; }
+function uwFont(size, fallback) { return window.UWTheme ? window.UWTheme.font(size >= 40 ? "head" : "body", fallback) : fallback; }
+window.addEventListener("uw-theme", () => { if (SHARE.a) renderShare(); });
+
+function renderShare() {
+  const a = SHARE.a; if (!a) return;
+  const cv = $("#shot"), P = uwPal(SHARE.dark ? SP.dark : SP.light, SHARE.dark);
+  const h = Math.ceil(drawShare(cv.getContext("2d"), a, P, SHARE.detail, false, 0));
+  cv.width = SW; cv.height = h;
+  drawShare(cv.getContext("2d"), a, P, SHARE.detail, true, h);
+}
+function shareCaption(a) {
+  const bull = a.direction === "BULL", lv = a.levels || {}, hz = (a.horizon && (a.horizon.detail || a.horizon.label)) || "";
+  const who = SHARE.detail ? `$${a.ticker}` : `A ${(a.sector || "US equity").toLowerCase()} name`;
+  const lev = SHARE.detail ? `Entry $${fmtNum(lv.entry_low)}–${fmtNum(lv.entry_high)}, stop $${fmtNum(lv.stop)}, target $${fmtNum(lv.target)}`
+    : shareLevels(a, false).slice(0, 3).map(([k, v]) => `${k.toLowerCase()} ${v}`).join(", ");
+  return `${who}: ${bull ? "bullish" : "bearish"} swing setup, score ${Math.abs(Math.round(a.score))}/100, driven by ${drivers(a)}. `
+    + `${lev} (R:R ${fmtNum(lv.rr, 2)}), hold ${hz}.` + ((a.penalties || []).length ? ` Caution: ${a.penalties.join(", ")}.` : "");
+}
+function openShare(t) {
+  const a = ((S.scan && S.scan.alerts) || []).find((x) => x.ticker === t); if (!a) return;
+  SHARE.a = a; $("#shareHint").textContent = "";
+  $("#shareModal").dataset.open = "true";
+  $("#shareCap").value = shareCaption(a); renderShare(); $("#btnClose").focus();
+}
+function closeShare() { $("#shareModal").dataset.open = "false"; SHARE.a = null; }
+function bindShare() {
+  $("#alerts").addEventListener("click", (e) => { const b = e.target.closest(".share-btn"); if (b) openShare(b.dataset.share); });
+  const pair = (on, off, set) => [[on, true], [off, false]].forEach(([id, v]) => $(id).addEventListener("click", () => {
+    set(v); $(on).classList.toggle("on", v); $(off).classList.toggle("on", !v); renderShare(); $("#shareCap").value = shareCaption(SHARE.a); }));
+  pair("#optDetail", "#optAnon", (v) => SHARE.detail = v);
+  pair("#optDark", "#optLight", (v) => SHARE.dark = v);
+  $("#btnClose").addEventListener("click", closeShare);
+  $("#shareModal").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeShare(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#shareModal").dataset.open === "true") closeShare(); });
+  const hint = (t) => { $("#shareHint").textContent = t; };
+  if (!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write)) { $("#btnCopy").disabled = true; hint("Copying images isn't available here, so use Download PNG."); }
+  $("#btnCopy").addEventListener("click", () => $("#shot").toBlob((b) => navigator.clipboard.write([new ClipboardItem({ "image/png": b })])
+    .then(() => hint("Image copied."), () => hint("Copy failed, so use Download PNG."))));
+  $("#btnDl").addEventListener("click", () => {
+    const a = SHARE.a; if (!a) return;
+    const name = `swing-${SHARE.detail ? a.ticker : "setup"}-${new Date().toISOString().slice(0, 10)}.png`;
+    const link = document.createElement("a"); link.download = name; link.href = $("#shot").toDataURL("image/png"); link.click();
+    hint(`Saved ${name}`);
+  });
+  $("#btnCapCopy").addEventListener("click", () => navigator.clipboard.writeText($("#shareCap").value)
+    .then(() => hint("Caption copied."), () => hint("Copy failed.")));
+}
+bindShare();
+
+/* ------------------------------------------------------------- rendering */
+function passesFilters(a) {
+  const f = S.filters;
+  if (f.dir !== "all" && a.direction !== f.dir) return false;
+  if (f.hz !== "all" && a.horizon.label !== f.hz) return false;
+  if (Math.abs(a.score) < f.minScore) return false;
+  return true;
+}
+
+const DRIVER_LABELS = { flow: "flow", oi: "OI", dark: "dark pool", gamma: "gamma", tech: "chart" };
+function drivers(a) {
+  const d = a.drivers || [];
+  return d.length ? d.map(k => DRIVER_LABELS[k] || k).join(" + ") : "no single signal";
+}
+
+function renderMarket() {
+  const m = (S.scan && S.scan.market) || {};
+  const el = $("#marketBox");
+  if (!el) return;
+  if (m.open === false) {
+    const when = S.scan.generated_at ? new Date(S.scan.generated_at).toLocaleString() : "";
+    el.innerHTML = `<div class="err" style="border-color:var(--ink-3)"><strong>Market closed</strong> (${esc(m.reason || "")}).
+      The desk scans on its own ${esc(m.scan_start || "09:35")}–${esc(m.scan_end || "16:00")} ET on trading days, page open or not.
+      Showing the last scan${when ? " from " + esc(when) : ""}${S.scan.recorded === false ? " (not recorded)" : ""}.</div>`;
+  } else el.innerHTML = "";
+}
+
+function renderAlerts() {
+  if (!S.scan) return;
+  renderMarket();
+  const list = (S.scan.alerts || []).filter(passesFilters);
+  $("#alerts").innerHTML = list.map(alertCard).join("");
+  $("#alertsEmpty").hidden = list.length > 0;
+  $("#alertsSub").textContent =
+    `${list.length} of ${(S.scan.alerts || []).length} passing · ${S.scan.universe || 0} tickers scanned`;
+  $("#alertCount").textContent = (S.scan.alerts || []).length;
+  $("#uniVal").textContent = S.scan.universe || "—";
+
+  // component-bar tooltips
+  $$(".comp").forEach(el => {
+    el.addEventListener("mouseenter", (e) => {
+      const a = (S.scan.alerts || []).concat(S.scan.watch || [])
+        .find(x => x.ticker === el.dataset.tkr);
+      if (!a) return;
+      const k = el.dataset.comp, c = a.components[k];
+      const m = COMP_META[k];
+      showTip(e, `${a.ticker} · ${m.label}`,
+        `${m.blurb}<br><br>Score ${c.value >= 0 ? "+" : "−"}${Math.abs(c.value).toFixed(2)} × weight ${c.weight}
+         = <strong>${c.contribution >= 0 ? "+" : "−"}${Math.abs(c.contribution).toFixed(1)}</strong><br><br>${compDetail(k, c)}`);
+    });
+    el.addEventListener("mouseleave", hideTip);
+  });
+
+  // watchlist
+  const watch = (S.scan.watch || []).filter(passesFilters);
+  $("#watchSection").hidden = !S.filters.showWatch;
+  $("#watchSub").textContent = `${watch.length} near-miss setups`;
+  $("#watchTbl").innerHTML = `
+    <thead><tr><th>Ticker</th><th>Dir</th><th>Score</th><th>Driven by</th><th>Hold time</th>
+    <th>Price</th><th>Chg</th><th>R:R</th><th>Why it's held back</th></tr></thead>
+    <tbody>${watch.map(a => {
+      const reasons = [];
+      if (Math.abs(a.score) < (S.scan.config?.min_score ?? 40)) reasons.push(`score below ${S.scan.config?.min_score ?? 40}`);
+      if (a.agreeing < (S.scan.config?.min_agreeing ?? 3)) reasons.push(`only ${a.agreeing} signal${a.agreeing === 1 ? "" : "s"} of real size`);
+      if (a.levels.rr < (S.scan.config?.min_rr ?? 1.3)) reasons.push(`R:R ${fmtNum(a.levels.rr, 2)}`);
+      if (a.too_volatile) reasons.push("ATR wider than the trade band");
+      return `<tr>
+        <td class="t">${esc(a.ticker)}</td>
+        <td class="${a.direction === "BULL" ? "up" : "dn"}">${a.direction === "BULL" ? "▲" : "▼"}</td>
+        <td>${Math.round(a.score)}</td>
+        <td style="color:var(--ink-2)">${esc(drivers(a))}</td>
+        <td title="${esc(a.horizon.detail || "")} — expected holding period, not trade direction">${esc(a.horizon.short || a.horizon.detail || a.horizon.label)}</td>
+        <td>${fmtNum(a.price)}</td>
+        <td class="${a.change_pct >= 0 ? "up" : "dn"}">${fmtPct(a.change_pct)}</td>
+        <td>${fmtNum(a.levels.rr, 2)}</td>
+        <td style="color:var(--ink-3)">${esc(reasons.join(", ") || "—")}</td>
+      </tr>`;
+    }).join("")}</tbody>`;
+}
+
+function renderTape() {
+  if (!S.tape) return;
+  const fa = S.tape.flow_alerts || [], dp = S.tape.dark_pool || [];
+  $("#faCount").textContent = `${fa.length}`;
+  $("#dpCount").textContent = `${dp.length}`;
+  $("#faTbl").innerHTML = `
+    <thead><tr><th>Ticker</th><th>Contract</th><th>DTE</th><th>Premium</th><th>Vol/OI</th><th>Rule</th></tr></thead>
+    <tbody>${fa.map(f => `<tr>
+      <td class="t">${esc(f.ticker)}</td>
+      <td class="${f.type === "call" ? "up" : "dn"}">${fmtNum(f.strike, 0)}${f.type === "call" ? "C" : "P"}
+          <span style="color:var(--ink-3)">${esc((f.expiry || "").slice(2))}</span></td>
+      <td>${f.dte ?? "—"}</td>
+      <td>${fmtUsd(f.premium)}</td>
+      <td>${fmtNum(f.vol_oi, 1)}</td>
+      <td style="color:var(--ink-3)">${esc(f.rule)}${f.sweep ? " ·sweep" : ""}</td>
+    </tr>`).join("")}</tbody>`;
+  $("#dpTbl").innerHTML = `
+    <thead><tr><th>Time</th><th>Ticker</th><th>Size</th><th>Price</th><th>Premium</th><th>Lean</th></tr></thead>
+    <tbody>${dp.map(p => `<tr>
+      <td style="color:var(--ink-3)">${timeOf(p.executed_at)}</td>
+      <td class="t">${esc(p.ticker)}</td>
+      <td>${fmtInt(p.size)}</td>
+      <td>${fmtNum(p.price)}</td>
+      <td>${fmtUsd(p.premium)}</td>
+      <td class="${p.lean >= 0 ? "up" : "dn"}">${p.lean >= 0 ? "▲ above mid" : "▼ below mid"}</td>
+    </tr>`).join("")}</tbody>`;
+}
+
+function renderTide() {
+  if (!S.tide) return;
+  const net = S.tide.net || 0;
+  $("#tideNet").textContent = fmtUsd(net);
+  $("#tideNet").className = "val mono " + (net >= 0 ? "up" : "dn");
+  $("#tideVal").textContent = net > 5e7 ? "Risk-on" : net < -5e7 ? "Risk-off" : "Neutral";
+  $("#tideVal").className = "val " + (net > 5e7 ? "up" : net < -5e7 ? "dn" : "");
+
+  const pts = (S.tide.series || []).map(p => (p.call || 0) - (p.put || 0));
+  const svg = $("#tideChart");
+  if (pts.length < 2) { svg.innerHTML = ""; return; }
+  const W = 300, H = 34;
+  const min = Math.min(0, ...pts), max = Math.max(0, ...pts), rng = (max - min) || 1;
+  const y0 = H - 2 - ((0 - min) / rng) * (H - 4);
+  const d = pts.map((v, i) => {
+    const x = (i / (pts.length - 1)) * W;
+    const y = H - 2 - ((v - min) / rng) * (H - 4);
+    return `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join("");
+  const col = pts[pts.length - 1] >= 0 ? "var(--good)" : "var(--critical)";
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = `
+    <line x1="0" y1="${y0.toFixed(1)}" x2="${W}" y2="${y0.toFixed(1)}"
+          stroke="var(--axis)" stroke-width="1" stroke-dasharray="2 3"/>
+    <path d="${d}" fill="none" stroke="${col}" stroke-width="2"
+          stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+}
+
+function renderHealth(h) {
+  const dot = $("#healthDot"), txt = $("#healthTxt");
+
+  if (!h) {
+    dot.className = "dot bad";
+    txt.textContent = "server unreachable";
+    showSetup("Can't reach the dashboard server.", `
+      The page loaded but ${CODE("/api/health")} didn't answer, so the Python process
+      isn't serving on this address any more.<br><br>
+      Check the terminal where you ran ${CODE("python3 server.py")} — if it exited or you
+      closed it, start it again from the <code>uw-swing</code> folder and reload this page.`);
+    return;
+  }
+
+  if (!h.token) {
+    dot.className = "dot bad";
+    txt.textContent = "no API token";
+    showSetup("No Unusual Whales API token.", `
+      The server is running, but it has no token, so every UW request is refused.<br><br>
+      Stop it, then start it again with your token:<br><br>
+      ${CODE("export UW_API_TOKEN='your-token'")}<br>
+      ${CODE("python3 server.py")}<br><br>
+      Or put ${CODE("UW_API_TOKEN=your-token")} in a <code>.env</code> file beside
+      <code>server.py</code>. Your token is under Settings → API on unusualwhales.com.`);
+    return;
+  }
+
+  if (h.discord) {
+    const d = $("#discordPill");
+    if (d) {
+      d.hidden = false;
+      d.innerHTML = h.discord.enabled
+        ? `<span class="dot ok"></span>Discord on · ${h.discord.min_score}+`
+        : `<span class="dot"></span>Discord off`;
+      d.title = h.discord.enabled
+        ? `Posts a setup scoring ${h.discord.min_score}+ with ${h.discord.min_agreeing} signals of real size `
+          + `pointing the same way that holds ${h.discord.min_streak} consecutive scans. `
+          + `Cooldown ${h.discord.cooldown_hours}h per ticker. Daily wrap ${h.discord.wrap_hour_et}:00 ET.`
+        : "Add DISCORD_WEBHOOK_URL to your .env file and restart to enable.";
+    }
+  }
+  if (h.history) {
+    const el = $("#histPill");
+    if (el) {
+      el.hidden = false;
+      const hi = h.history.max_score_today;
+      el.textContent = `${h.history.scans} scans on ${h.history.scan_days ?? "?"} days`
+        + (hi != null ? ` · top score today ${Math.round(hi)} of 100` : "");
+      el.title = "The score's theoretical maximum is 100. Highest ever recorded: "
+        + (h.history.max_score_ever != null ? Math.round(h.history.max_score_ever) : "—");
+    }
+  }
+
+  const feeds = Object.entries(h.feeds || {});
+  if (!feeds.length) { dot.className = "dot warn"; txt.textContent = "warming up"; return; }
+
+  const bad = feeds.filter(([, v]) => !v.ok);
+  if (!bad.length) {
+    dot.className = "dot ok";
+    txt.textContent = `${feeds.length} feeds live`;
+    txt.title = "";
+    showError("");
+    return;
+  }
+
+  dot.className = "dot warn";
+  txt.textContent = `${bad.length} feed${bad.length > 1 ? "s" : ""} degraded`;
+  txt.title = bad.map(([k, v]) => `${k}: ${v.detail}`).join("\n");
+
+  // Surface the actual upstream reason — a 401/403 is a token problem, a 429 is
+  // rate limiting, and both are worth naming rather than hiding behind "degraded".
+  const blob = bad.map(([, v]) => v.detail || "").join(" ");
+  if (/HTTP 40[13]/.test(blob)) {
+    showSetup("Unusual Whales rejected the token.", `
+      The server is running and reaching UW, but the API returned
+      <strong>401/403 Unauthorized</strong>.<br><br>
+      Usually the token is mistyped, expired, or lacks API access — the API is a paid
+      add-on separate from the site subscription. Check it under Settings → API on
+      unusualwhales.com, then restart the server.<br><br>
+      <span style="color:var(--ink-3)">${esc(blob.slice(0, 200))}</span>`);
+  } else if (/HTTP 429/.test(blob)) {
+    showSetup("Rate limited by Unusual Whales.", `
+      The API is returning <strong>429</strong>. Lower ${CODE("enrich_top")} or raise the
+      ${CODE("ttl_*")} values in the <code>CFG</code> block at the top of
+      <code>server.py</code>, then restart.`);
+  } else {
+    showSetup(`${bad.length} feed${bad.length > 1 ? "s" : ""} not responding.`,
+      bad.map(([k, v]) => `<strong>${esc(k)}</strong> — ${esc((v.detail || "").slice(0, 160))}`)
+         .join("<br>") +
+      `<br><br><span style="color:var(--ink-3)">Panels fed by the healthy feeds keep updating;
+       the rest show their last good values.</span>`);
+  }
+}
+
+/* Failure states are distinguished so the banner says what to actually do,
+   rather than surfacing a bare "Failed to fetch". */
+function showError(msg) {
+  $("#errBox").innerHTML = msg
+    ? `<div class="err"><strong>Data problem.</strong> ${esc(msg)}</div>` : "";
+}
+
+function showSetup(title, bodyHtml) {
+  $("#errBox").innerHTML = `<div class="err">
+    <strong>${esc(title)}</strong>
+    <div style="margin-top:8px;line-height:1.6">${bodyHtml}</div>
+  </div>`;
+}
+
+const CODE = (s) => `<code style="background:var(--surface-2);border:1px solid var(--border);
+  border-radius:5px;padding:1px 6px;font-size:12px">${esc(s)}</code>`;
+
+/* Opened straight off disk: every relative /api call resolves to file:///api/... */
+function fileProtocolGuard() {
+  if (location.protocol !== "file:") return false;
+  S.halted = true;
+  showSetup("This page has to be served by the Python server, not opened as a file.", `
+    You've opened <code>index.html</code> directly, so the browser is looking for the data at
+    <code>file:///api/scan</code> — which doesn't exist. The dashboard and the API live in the
+    same server process.<br><br>
+    In a terminal, from the <code>uw-swing</code> folder:<br><br>
+    ${CODE("export UW_API_TOKEN='your-token'")}<br>
+    ${CODE("python3 server.py")}<br><br>
+    Then open <strong>http://127.0.0.1:8787</strong> — that address, not the file.`);
+  $("#healthDot").className = "dot bad";
+  $("#healthTxt").textContent = "opened as a file";
+  return true;
+}
+
+/* ------------------------------------------------------------- polling */
+async function get(path) {
+  const r = await fetch(path, { cache: "no-store" });
+  if (!r.ok) throw new Error(`${path} → HTTP ${r.status}`);
+  return r.json();
+}
+
+async function pollScan() {
+  if (S.halted) return;
+  try {
+    const d = await get("/api/scan");
+    S.scan = d;
+    // Only clear the banner on a clean scan; renderHealth owns the setup states.
+    if (d.error) showError(d.error);
+    renderAlerts();
+  } catch (e) { /* renderHealth reports connectivity with a usable message */ }
+}
+async function pollTape() {
+  if (S.halted) return;
+  try { S.tape = await get("/api/tape"); renderTape(); } catch (e) { /* tape is secondary */ }
+}
+async function pollTide() {
+  if (S.halted) return;
+  try { S.tide = await get("/api/tide"); renderTide(); } catch (e) { /* secondary */ }
+}
+async function pollHealth() {
+  if (S.halted) return;
+  try { renderHealth(await get("/api/health")); } catch (e) { renderHealth(null); }
+}
+
+function tickClock() {
+  $("#clock").textContent = new Date().toLocaleTimeString([], {
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  });
+}
+
+/* --------------------------------------------------------------- events */
+$("#dirFilter").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  $$("#dirFilter button").forEach(x => x.classList.toggle("on", x === b));
+  S.filters.dir = b.dataset.v; renderAlerts();
+});
+$("#hzFilter").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  $$("#hzFilter button").forEach(x => x.classList.toggle("on", x === b));
+  S.filters.hz = b.dataset.v; renderAlerts();
+});
+$("#minScore").addEventListener("input", (e) => {
+  S.filters.minScore = +e.target.value;
+  $("#minScoreVal").textContent = e.target.value;
+  renderAlerts();
+});
+$("#showWatch").addEventListener("change", (e) => {
+  S.filters.showWatch = e.target.checked; renderAlerts();
+});
+$("#refreshBtn").addEventListener("click", () => {
+  $("#refreshBtn").textContent = "Refreshing…";
+  Promise.all([pollScan(), pollTape(), pollTide(), pollHealth()])
+    .finally(() => { $("#refreshBtn").textContent = "Refresh"; });
+});
+$("#themeBtn").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("uwswing.theme", next); } catch (e) {}
+});
+try {
+  const t = localStorage.getItem("uwswing.theme");
+  if (t) document.documentElement.setAttribute("data-theme", t);
+} catch (e) {}
+
+/* ----------------------------------------------------------------- boot */
+tickClock();
+setInterval(tickClock, 1000);
+
+// If the page was opened off disk there is nothing to poll — say so and stop.
+if (!fileProtocolGuard()) {
+pollHealth(); pollScan(); pollTape(); pollTide();
+// The first health poll races the first scan, so feeds read as "warming up".
+// Re-poll once the opening round of fetches has had a chance to register.
+setTimeout(pollHealth, 4000);
+setInterval(pollScan, 45000);
+setInterval(pollTape, 20000);
+setInterval(pollTide, 60000);
+setInterval(pollHealth, 30000);
+}
+</script>
+</body>
+</html>

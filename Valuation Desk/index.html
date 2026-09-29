@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valuation Desk</title>
+<style>
+/* Same validated palette tokens as every other UW desk, verbatim. */
+:root {
+  color-scheme: light;
+  --surface-1: #fcfcfb; --surface-2: #f4f4f1; --page: #f9f9f7;
+  --ink-1: #0b0b0b; --ink-2: #52514e; --ink-3: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10); --border-strong: rgba(11,11,11,0.18);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(11,11,11,.06), 0 4px 12px rgba(11,11,11,.04);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1: #1a1a19; --surface-2: #232322; --page: #0d0d0d;
+  --ink-1: #ffffff; --ink-2: #c3c2b7; --ink-3: #898781;
+  --grid: #2c2c2a; --axis: #383835;
+  --border: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.18);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--page); color:var(--ink-1);
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased; }
+.wrap { max-width:1340px; margin:0 auto; padding:20px 20px 80px; }
+h1,h2,h3 { margin:0; font-weight:600; letter-spacing:-0.01em; }
+.mono, td.n, .n { font-variant-numeric: tabular-nums; }
+header { position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--page) 92%, transparent);
+  backdrop-filter:blur(12px); border-bottom:1px solid var(--border); margin:-20px -20px 18px; padding:13px 20px; }
+.hdr { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.hdr h1 { font-size:17px; }
+.sub { color:var(--ink-2); font-size:12.5px; }
+.spacer { flex:1; }
+button, input, select, textarea { font:inherit; color:var(--ink-1); background:var(--surface-1);
+  border:1px solid var(--border-strong); border-radius:7px; padding:6px 11px; }
+button { cursor:pointer; }
+button:hover:not(:disabled) { background:var(--surface-2); }
+button:disabled { opacity:.5; cursor:default; }
+button.primary, button.primary:hover:not(:disabled) { background:var(--ink-1); color:var(--page); border-color:var(--ink-1); font-weight:600; }
+button.on, .files button.on { background:var(--ink-1); color:var(--page); border-color:var(--ink-1); }
+#tickerIn { width:120px; text-transform:uppercase; font-weight:600; letter-spacing:.03em; }
+.ov input { width:70px; }
+.ov label { font-size:12px; color:var(--ink-3); display:flex; align-items:center; gap:5px; }
+.banner { border:1px solid var(--border-strong); border-radius:9px; padding:11px 14px; margin-bottom:14px;
+  font-size:13px; }
+.banner.warn { border-color:var(--warning); background:color-mix(in srgb,var(--warning) 9%, var(--surface-1)); }
+.banner.err { border-color:var(--critical); background:color-mix(in srgb,var(--critical) 9%, var(--surface-1)); }
+.grid { display:grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); gap:18px; align-items:start; }
+@media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+.panel { background:var(--surface-1); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow);
+  padding:16px 18px; margin-bottom:18px; }
+.panel h2 { font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-3); margin-bottom:10px; }
+.verdict { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.verdict .big { font-size:44px; font-weight:700; line-height:1; }
+.verdict .lab { font-size:18px; font-weight:700; }
+.chip { display:inline-block; padding:2px 8px; border-radius:99px; font-size:12px; border:1px solid var(--border-strong);
+  color:var(--ink-2); }
+.good { color:var(--good); } .warn { color:var(--warning); } .bad { color:var(--critical); }
+.kv { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:10px 14px; margin-top:12px; }
+@media (max-width: 600px) { .kv { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.kv .k { font-size:11.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
+.kv .v { font-size:18px; font-weight:600; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; font-weight:500; color:var(--ink-3); font-size:11.5px; text-transform:uppercase;
+  letter-spacing:.04em; padding:6px 8px; border-bottom:1px solid var(--border-strong); }
+td { padding:6px 8px; border-bottom:1px solid var(--border); }
+td.n, th.n { text-align:right; }
+tr.click { cursor:pointer; } tr.click:hover td { background:var(--surface-2); }
+tr.sel td { background:color-mix(in srgb, var(--s1) 12%, transparent); }
+.files { display:flex; gap:8px; flex-wrap:wrap; }
+.files a, .files button { text-decoration:none; color:var(--ink-1); font-size:13px; border:1px solid var(--border-strong);
+  border-radius:7px; padding:6px 11px; background:var(--surface-1); }
+.files a.missing { color:var(--ink-3); border-style:dashed; pointer-events:none; }
+canvas#card { width:100%; height:auto; border-radius:10px; border:1px solid var(--border); display:block; }
+pre { background:var(--surface-2); border-radius:8px; padding:12px; font-size:11.5px; overflow:auto; max-height:520px;
+  white-space:pre; }
+details summary { cursor:pointer; color:var(--ink-2); }
+.muted { color:var(--ink-3); } .small { font-size:12px; }
+.empty { color:var(--ink-3); padding:28px 0; text-align:center; }
+.synopsis { margin-top:10px; padding:10px 12px; border-left:3px solid var(--s1); background:var(--surface-2); border-radius:6px; line-height:1.5; }
+.flags li { margin:3px 0; list-style:none; } .flags { padding:0; margin:8px 0 0; }
+footer { margin-top:30px; font-size:12px; color:var(--ink-3); }
+.spin { display:inline-block; width:12px; height:12px; border:2px solid var(--ink-3); border-top-color:transparent;
+  border-radius:50%; animation:sp .8s linear infinite; vertical-align:-2px; }
+@keyframes sp { to { transform:rotate(360deg); } }
+svg text { fill: var(--ink-3); font-size:11px; }
+</style>
+<script src="http://127.0.0.1:8700/theme.js?desk=valuation"></script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="hdr">
+    <h1 data-uw-name>Valuation Desk</h1>
+    <span class="sub">DCF + scenarios &rarr; report, script and share card</span>
+    <span class="spacer"></span>
+    <form id="runForm" class="hdr" autocomplete="off">
+      <input id="tickerIn" placeholder="TICKER" maxlength="10" aria-label="Ticker">
+      <span class="ov hdr">
+        <label>Discount % <input id="ovDisc" inputmode="decimal" placeholder="auto"></label>
+        <label>Growth % <input id="ovGrowth" inputmode="decimal" placeholder="auto"></label>
+      </span>
+      <button class="primary" id="runBtn" type="submit">Run valuation</button>
+    </form>
+    <button id="themeBtn" type="button">Light</button>
+  </div>
+</header>
+
+<div id="sticky"></div>
+<div id="banners"></div>
+
+<div class="grid">
+  <div>
+    <div class="panel" id="resultPanel"><div class="empty">Type a ticker and press Run. A run takes ~5 API calls and a few seconds.</div></div>
+    <div class="panel">
+      <h2>Share card</h2>
+      <div class="hdr small" style="margin-bottom:10px">
+        <span class="muted">Theme</span>
+        <span id="cardMode"><button data-m="full" class="on" type="button">Full</button> <button data-m="short" type="button">Summary</button></span>
+        <span id="cardTheme"><button data-t="dark" class="on" type="button">Dark</button> <button data-t="light" type="button">Light</button></span>
+        <span class="spacer"></span>
+        <button id="copyBtn" type="button" disabled>Copy image</button>
+        <button id="dlBtn" type="button" disabled>Download PNG</button>
+        <button id="saveBtn" type="button" disabled>Save to folder</button>
+      </div>
+      <canvas id="card" width="1080" height="400"></canvas>
+      <div class="small muted" id="cardHint" style="margin-top:8px">Both dark cards are saved into the run folder automatically: {TICKER}_Summary_Card.png (full) and {TICKER}_Short_Card.png (summary).</div>
+    </div>
+  </div>
+  <div>
+    <div class="panel" id="screenPanel">
+      <h2>Screener &middot; hunt for cheap + good</h2>
+      <div class="hdr small" style="gap:8px;flex-wrap:wrap">
+        <select id="scSrc" aria-label="Screen source">
+          <option value="list">Paste tickers</option>
+          <option value="history">My history tickers</option>
+          <option value="etf">ETF holdings (SPY, QQQ, XLK...)</option>
+        </select>
+        <input id="scEtf" placeholder="SPY" maxlength="8" style="width:80px;display:none" aria-label="ETF">
+        <button class="primary" id="scStart" type="button">Start screen</button>
+        <button id="scStop" type="button" disabled>Stop</button>
+        <span id="scStatus" class="muted"></span>
+      </div>
+      <textarea id="scList" rows="2" placeholder="AAPL MSFT GOOGL BRK.B KO ..." style="width:100%;margin-top:8px"></textarea>
+      <div class="small muted" style="margin-top:4px">About 6 API calls and ~2 s per ticker; runs in the background and resumes if the desk is closed. Click a row to run its full report.</div>
+      <div id="scList2" style="margin-top:10px"></div>
+      <div id="scView"></div>
+    </div>
+    <div class="panel" id="histPanel"><h2>History</h2><div class="empty">No runs yet.</div></div>
+    <div class="panel" id="consolePanel" style="display:none"><h2>Console output (from executing the script)</h2><pre id="console"></pre></div>
+  </div>
+</div>
+<footer id="foot"></footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const state = { current:null, cardTheme:"dark", cardMode:"full", ticker:null, runs:[] };
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const COL = { good:"good", warn:"warn", bad:"bad" };
+
+async function api(path, opts){
+  const r = await fetch(path, opts);
+  let j = {};
+  try { j = await r.json(); } catch(e) { j = {error:"Bad response ("+r.status+")"}; }
+  if (!r.ok || j.error) throw new Error(j.error || ("HTTP "+r.status));
+  return j;
+}
+function banner(kind, html){ $("#banners").insertAdjacentHTML("beforeend", `<div class="banner ${kind}">${html}</div>`); }
+function clearBanners(){ $("#banners").innerHTML = ""; }
+
+async function health(){
+  try {
+    const h = await api("/api/health");
+    if (!h.token) $("#sticky").innerHTML = '<div class="banner err"><b>No UW_API_TOKEN found.</b> Put it in <code>.env</code> next to server.py, or leave a sibling desk\'s .env next door (Swing, Institutional, Confluence&hellip;).</div>';
+    const fx = Object.entries(h.fx||{}).map(([k,v])=>`${k} ${v}`).join(", ");
+    $("#foot").innerHTML = `Model ${esc(h.build.model)} &middot; page built ${esc(h.build.index_mtime)} &middot; running from ${esc(h.build.folder)} on port ${h.build.port}`
+      + (fx ? ` &middot; FX: ${esc(fx)}` : "") + ` &middot; Educational use only, not financial advice.`;
+  } catch(e) { banner("err", "Desk server not reachable: "+esc(e.message)); }
+}
+
+/* ------------------------------------------------------------- run */
+$("#runForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const t = $("#tickerIn").value.trim().toUpperCase();
+  if (!t) return;
+  clearBanners();
+  const btn = $("#runBtn"); btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Running';
+  try {
+    const out = await api("/api/run", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ticker:t, discount:$("#ovDisc").value.trim(), growth:$("#ovGrowth").value.trim()})});
+    state.current = {run_id:out.run_id, card:out.card, result:out.result, files:out.files, out_dir:out.out_dir,
+                     console:out.console, run_at:new Date().toISOString().slice(0,19)};
+    showCurrent();
+    await saveCard(true);
+    await loadHistory(t, out.run_id);
+  } catch(err) {
+    banner("err", "<b>"+esc(t)+":</b> "+esc(err.message));
+  } finally { btn.disabled = false; btn.textContent = "Run valuation"; }
+});
+
+async function openRun(id){
+  try {
+    const r = await api("/api/run/"+id);
+    state.current = r; showCurrent(); markSel(id);
+  } catch(e) { banner("err", esc(e.message)); }
+}
+
+/* ------------------------------------------------------------ result */
+function showCurrent(){
+  const c = state.current; if (!c) return;
+  const res = c.result, cd = c.card, f = res.fin, s = res.score, v = res.valuation.scenarios;
+  const cls = COL[s.colour];
+  const flags = res.flags.map(x => `<li><span class="${x.bad?'bad':'good'}">${x.bad?'&#10007;':'&#10003;'}</span> ${esc(x.text)}${x.points?` <span class="muted small">&minus;${x.points.toFixed(2)}</span>`:""}</li>`).join("")
+    + res.unmeasured.map(u => `<li><span class="muted">?</span> <span class="muted">${esc(u)}</span></li>`).join("");
+  const filesHtml = [["docx","Word report"],["png","Share card (full)"],["short","Share card (summary)"],["py","Analysis script"],["console","Console output"],["data","Raw data"]]
+    .map(([k,l]) => c.files[k] ? `<a href="/api/file/${c.run_id}/${k}" ${k==="png"||k==="short"||k==="console"?'target="_blank"':''}>${l}</a>`
+                              : `<a class="missing">${l}</a>`).join("");
+  const ov = Object.entries(res.overrides||{}).map(([k,v])=>`${k} ${(100*v).toFixed(1)}%`).join(", ");
+  $("#resultPanel").innerHTML = `
+    <div class="verdict">
+      <span style="font-size:26px;font-weight:700">${esc(f.ticker)}</span>
+      <span class="muted">${esc(f.name)} &middot; ${esc(f.sector)}</span>
+      <span class="spacer"></span>
+      <span class="big ${cls}">${s.badge}<span class="muted" style="font-size:16px;font-weight:500">/10</span></span>
+      <span class="lab ${cls}">${esc(s.verdict)}</span>
+    </div>
+    <div style="margin-top:6px;font-weight:600">${esc(res.verdict_line)}</div>
+    ${cd.synopsis ? `<div class="synopsis"><span>${esc(cd.synopsis)}</span> <button type="button" id="synBtn" class="small">Copy</button> <span class="muted small">${cd.synopsis.length}/280</span></div>` : ""}
+    <div class="small muted" style="margin-top:4px">${esc(res.class_label)} &middot; ${esc(res.method)} &middot; ${esc(f.basis)}${ov?` &middot; <b>overrides: ${esc(ov)}</b>`:""}</div>
+    <div class="kv">${cd.metrics.map(m => `<div><div class="k">${esc(m[0])}</div><div class="v n ${m[2]?COL[m[2]]:""}">${esc(m[1])}</div></div>`).join("")}</div>
+    <h2 style="margin-top:16px">Scenarios</h2>
+    <table><tr><th>Case</th><th class="n">Growth</th><th class="n">Start &rarr; Y5 margin</th><th class="n">Per share</th><th class="n">vs price</th></tr>
+    ${["bull","base","bear"].map(k => `<tr><td>${k.toUpperCase()}</td><td class="n">${pc(v[k].growth)}</td>
+      <td class="n">${pc(v[k].m0)} &rarr; ${pc(v[k].m5)}</td><td class="n">${px(v[k].per_share)}${v[k].floored?' <span class="muted small">(floored)</span>':''}</td>
+      <td class="n ${v[k].upside>=0?'good':'bad'}">${spc(v[k].upside)}</td></tr>`).join("")}</table>
+    <div class="small muted" style="margin-top:6px">Discount ${(100*res.valuation.discount).toFixed(1)}% &mdash; ${esc(res.valuation.discount_how)}</div>
+    ${res.why ? `<h2 style="margin-top:16px">Why this verdict</h2><ul class="flags small">${res.why.map(l=>`<li>${esc(l)}</li>`).join("")}</ul>` : ""}
+    ${res.quality ? qualityHtml(res.quality) : `<div class="small muted" style="margin-top:10px">Quality score: not measured (run saved before model 3.2 -- re-run to add it).</div>`}
+    ${res.valuation.returns ? returnsHtml(res.valuation.returns, res.valuation.discount, f.price) : ""}
+    <h2 style="margin-top:16px">Score build</h2>
+    <div class="small">Valuation <b>${s.valuation_points.toFixed(2)}</b> &minus; red flags <b>${s.flag_points.toFixed(2)}</b>${s.flag_points_raw>s.flag_points?` (capped from ${s.flag_points_raw.toFixed(2)})`:""} = <b>${s.before_gates!=null && s.before_gates!==s.score ? `${s.before_gates.toFixed(1)}</b>, capped at <b>${s.score.toFixed(1)}</b> by the Buffett gates` : s.score.toFixed(1)+"</b>"}
+    ${s.structural.length?`<div class="muted">${s.structural.map(esc).join("; ")}</div>`:""}</div>
+    <ul class="flags small">${flags}</ul>
+    ${(f.quality||[]).map(q=>`<div class="small warn">! ${esc(q)}</div>`).join("")}
+    ${(f.notes||[]).map(q=>`<div class="small muted">${esc(q)}</div>`).join("")}
+    <h2 style="margin-top:16px">Deliverables</h2>
+    <div class="files">${filesHtml}<button type="button" id="openBtn">Open folder</button></div>
+    <div class="small muted" style="margin-top:6px">${esc(c.out_dir||"")}</div>
+    <p class="small" style="margin-top:12px">${esc(res.summary)}</p>`;
+  if ($("#synBtn")) $("#synBtn").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(cd.synopsis); $("#synBtn").textContent = "Copied"; }
+    catch(e){ banner("warn", "Clipboard blocked by the browser -- select the text and copy it."); } });
+  $("#openBtn").addEventListener("click", () => api("/api/open/"+c.run_id, {method:"POST", headers:{"Content-Type":"application/json"}, body:"{}"}).catch(e=>banner("warn", esc(e.message))));
+  $("#consolePanel").style.display = c.console ? "" : "none";
+  $("#console").textContent = c.console || "";
+  drawCard();
+  ["#copyBtn","#dlBtn","#saveBtn"].forEach(id => $(id).disabled = false);
+  $("#copyBtn").disabled = !(typeof ClipboardItem !== "undefined" && navigator.clipboard && navigator.clipboard.write);
+}
+function qualityHtml(q){
+  const cl = v => v==null ? "muted" : v>=0.7 ? "good" : v>=0.4 ? "warn" : "bad";
+  const head = q.score==null ? `unknown <span class="muted small">(${q.measured} of 100 points measured -- no quality gate applied)</span>`
+    : `<b class="${q.score>=6?'good':q.score>=4?'warn':'bad'}">${q.score.toFixed(1)} / 10</b> <span class="muted small">${esc(q.tier)} &middot; ${q.measured}/100 points measured</span>`;
+  return `<h2 style="margin-top:16px">Quality &amp; management</h2><div>${head}</div>
+    <table><tr><th>Component</th><th class="n">Wt</th><th class="n">Score</th><th>Evidence</th></tr>
+    ${q.components.map(c => `<tr><td>${esc(c.label)}</td><td class="n">${c.weight}</td>
+      <td class="n ${cl(c.value)}">${c.value==null?"&mdash;":Math.round(100*c.value)+"%"}</td><td class="small">${esc(c.text)}</td></tr>`).join("")}</table>`;
+}
+function returnsHtml(r, disc, price){
+  const irr = r.irr || {}, g = k => irr[k] ?? irr[String(k)];
+  return `<h2 style="margin-top:16px">What a 5-10 year holder earns</h2>
+    <table><tr><th>Buy at ${px(price)} and the price&hellip;</th><th class="n">Per year</th></tr>
+    <tr><td>reaches the base value by year 5</td><td class="n">${spc(g(5))}</td></tr>
+    <tr><td>reaches the base value by year 10</td><td class="n">${spc(g(10))}</td></tr>
+    <tr><td>never re-rates (you earn the cash flows)</td><td class="n">${spc(r.implied_return)}</td></tr>
+    <tr><td class="muted">required return used in the DCF</td><td class="n muted">${pc(disc)}</td></tr></table>
+    <div class="small muted" style="margin-top:4px">Reverse DCF: ${r.implied_growth==null ? esc((r.notes||[]).join(" ") || "no growth rate reproduces the price") : `today's price assumes about <b>${pc(r.implied_growth)}</b> revenue growth a year for five years.`}</div>`;
+}
+const pc = v => v==null ? "n/a" : (100*v).toFixed(1)+"%";
+const spc = v => v==null ? "n/a" : (v>=0?"+":"")+(100*v).toFixed(1)+"%";
+const px = v => v==null ? "n/a" : "$"+Number(v).toFixed(2);
+
+/* ---------------------------------------------------------- screener */
+const QN = {cheap_good:["Cheap + good","good"], pricey_good:["Good, not cheap","muted"],
+            value_trap:["Cheap, weak business","warn"], avoid:["Neither","bad"], unknown:["Unmeasured","muted"]};
+state.screen = null; state.scOnly = false;
+$("#scSrc").addEventListener("change", () => {
+  const v = $("#scSrc").value;
+  $("#scEtf").style.display = v==="etf" ? "" : "none";
+  $("#scList").style.display = v==="list" ? "" : "none";
+});
+$("#scStart").addEventListener("click", async () => {
+  clearBanners();
+  try {
+    const out = await api("/api/screen", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({source:$("#scSrc").value, tickers:$("#scList").value, etf:$("#scEtf").value})});
+    state.screen = out.screen_id; await loadScreens();
+  } catch(e){ banner("err", "<b>Screen:</b> "+esc(e.message)); }
+});
+$("#scStop").addEventListener("click", () => api("/api/screen/stop", {method:"POST", headers:{"Content-Type":"application/json"}, body:"{}"}).then(loadScreens));
+let scTimer = null;
+async function loadScreens(){
+  try {
+    const l = await api("/api/screens");
+    const st = l.status;
+    $("#scStop").disabled = !st.busy; $("#scStart").disabled = st.busy;
+    $("#scStatus").innerHTML = st.busy ? `<span class="spin"></span> screen ${st.screen_id}: valuing ${esc(st.ticker||"")}` : "";
+    if (!state.screen && l.screens.length) state.screen = l.screens[0].id;
+    $("#scList2").innerHTML = l.screens.length ? `<div class="files">${l.screens.slice(0,8).map(x =>
+      `<button type="button" class="tk ${x.id===state.screen?'on':''}" data-s="${x.id}">${esc(x.name)} <span class="muted small">${x.done}/${x.total} ${esc(x.status)}</span></button>`
+      + ((x.status==="interrupted"||x.status==="stopped") && !st.busy ? ` <button type="button" class="small" data-r="${x.id}">Resume</button>` : "")).join(" ")}</div>` : "";
+    document.querySelectorAll("#scList2 [data-s]").forEach(b => b.addEventListener("click", () => { state.screen = +b.dataset.s; loadScreens(); }));
+    document.querySelectorAll("#scList2 [data-r]").forEach(b => b.addEventListener("click", async () => {
+      try { await api(`/api/screen/${b.dataset.r}/resume`, {method:"POST", headers:{"Content-Type":"application/json"}, body:"{}"}); state.screen = +b.dataset.r; loadScreens(); }
+      catch(e){ banner("err", esc(e.message)); } }));
+    if (state.screen) await showScreen(state.screen);
+    clearTimeout(scTimer);
+    if (st.busy) scTimer = setTimeout(loadScreens, 3000);
+  } catch(e){ /* server not up yet */ }
+}
+async function showScreen(id){
+  const d = await api("/api/screen/"+id);
+  const rows = d.rows, ok = rows.filter(r => r.status==="ok");
+  const shown = state.scOnly ? ok.filter(r => r.quadrant==="cheap_good") : rows;
+  const counts = Object.keys(QN).map(k => `${QN[k][0]}: <b>${ok.filter(r=>r.quadrant===k).length}</b>`).join(" &middot; ");
+  const fails = rows.length - ok.length;
+  const sp = v => v==null ? "&mdash;" : (v>=0?"+":"")+(100*v).toFixed(0)+"%";
+  $("#scView").innerHTML = `
+    <div class="small" style="margin:8px 0">${counts}${fails?` &middot; <span class="muted">${fails} skipped (hover for why)</span>`:""}</div>
+    ${scatter(ok)}
+    <label class="small"><input type="checkbox" id="scOnly" ${state.scOnly?"checked":""}> cheap + good only</label>
+    <div style="max-height:520px;overflow:auto;margin-top:6px"><table class="small">
+    <tr><th>Ticker</th><th>Verdict</th><th class="n">Score</th><th class="n">Quality</th><th class="n">Margin</th><th class="n">10-yr/yr</th><th class="n">Price</th><th class="n">Value</th><th>Corner</th></tr>
+    ${shown.map(r => r.status!=="ok"
+      ? `<tr title="${esc(r.error)}"><td>${esc(r.ticker)}</td><td colspan="8" class="muted">${esc(r.status)}: ${esc((r.error||"").slice(0,110))}</td></tr>`
+      : `<tr class="click" data-t="${esc(r.ticker)}" title="${esc(r.why||"")}"><td><b>${esc(r.ticker)}</b></td>
+         <td class="${r.score>5.5?'good':r.score>3.5?'warn':'bad'}">${esc(r.verdict)}${r.gated?` <span class="muted">(capped)</span>`:""}</td>
+         <td class="n">${r.score.toFixed(1)}</td>
+         <td class="n ${r.quality==null?'muted':r.quality>=6?'good':r.quality>=4?'warn':'bad'}">${r.quality==null?"?":r.quality.toFixed(1)}</td>
+         <td class="n">${sp(r.mos)}</td><td class="n">${sp(r.irr10)}</td>
+         <td class="n">${px(r.price)}</td><td class="n">${px(r.base_value)}</td>
+         <td class="${QN[r.quadrant][1]}">${QN[r.quadrant][0]}</td></tr>`).join("")}
+    </table></div>`;
+  $("#scOnly").addEventListener("change", e => { state.scOnly = e.target.checked; showScreen(id); });
+  document.querySelectorAll("#scView tr.click").forEach(tr => tr.addEventListener("click", () => {
+    $("#tickerIn").value = tr.dataset.t; $("#runForm").requestSubmit(); window.scrollTo({top:0, behavior:"smooth"});
+  }));
+}
+function scatter(ok){
+  // x = margin of safety (clamped -100%..+75%), y = quality 0..10. The target corner is shaded.
+  const W = 460, H = 260, L = 36, B = 26, T = 8, R = 8;
+  const X = m => L + (W-L-R) * (Math.max(-1, Math.min(0.75, m)) + 1) / 1.75;
+  const Y = q => T + (H-T-B) * (1 - q/10);
+  const pts = ok.filter(r => r.quality!=null && r.mos!=null);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" role="img" aria-label="Quality versus margin of safety">
+    <rect x="${X(0.25)}" y="${Y(10)}" width="${X(0.75)-X(0.25)}" height="${Y(6)-Y(10)}" fill="var(--good)" opacity=".12"/>
+    <line x1="${X(0.25)}" x2="${X(0.25)}" y1="${T}" y2="${H-B}" stroke="var(--axis)" stroke-dasharray="3 3"/>
+    <line x1="${L}" x2="${W-R}" y1="${Y(6)}" y2="${Y(6)}" stroke="var(--axis)" stroke-dasharray="3 3"/>
+    <line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--axis)"/>
+    <text x="${X(0.74)}" y="${Y(6)-5}" text-anchor="end" font-size="11" fill="var(--good)">cheap + good</text>
+    <text x="${L}" y="${H-8}" font-size="10" fill="var(--ink-3)">-100%</text>
+    <text x="${X(0.25)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--ink-3)">25% margin</text>
+    <text x="${W-R}" y="${H-8}" text-anchor="end" font-size="10" fill="var(--ink-3)">+75% &rarr;</text>
+    <text x="4" y="${Y(10)+10}" font-size="10" fill="var(--ink-3)">Q10</text><text x="4" y="${Y(6)+4}" font-size="10" fill="var(--ink-3)">6</text><text x="4" y="${Y(0)}" font-size="10" fill="var(--ink-3)">0</text>
+    ${pts.map(r => `<circle cx="${X(r.mos)}" cy="${Y(r.quality)}" r="5" fill="${r.quadrant==='cheap_good'?'var(--good)':'var(--s1)'}" opacity=".85"><title>${esc(r.ticker)}: quality ${r.quality.toFixed(1)}, margin ${(100*r.mos).toFixed(0)}%</title></circle>`
+      + (r.quadrant==='cheap_good' || pts.length <= 25 ? `<text x="${X(r.mos)+7}" y="${Y(r.quality)+4}" font-size="10" fill="var(--ink-2)">${esc(r.ticker)}</text>` : "")).join("")}
+  </svg>`;
+}
+
+/* ----------------------------------------------------------- history */
+async function loadHistory(t, selId){
+  state.ticker = t;
+  try {
+    const [h, tk] = await Promise.all([api("/api/history?ticker="+encodeURIComponent(t)), api("/api/tickers")]);
+    state.runs = h.runs;
+    const rows = h.runs.map(r => `<tr class="click" data-id="${r.id}"><td>${esc(r.run_at.replace("T"," ").slice(0,16))}</td>
+      <td class="n">${px(r.price)}</td><td class="n">${px(r.base_value)}</td>
+      <td class="n">${px(r.bear_value)} &ndash; ${px(r.bull_value)}</td>
+      <td class="n"><b class="${r.score>5.5?'good':r.score>3.5?'warn':'bad'}">${r.score.toFixed(1)}</b></td><td>${esc(r.verdict)}</td>
+      <td class="small muted">${r.overrides && r.overrides!=="{}" ? "override" : ""}</td></tr>`).join("");
+    const others = tk.tickers.map(x => `<button type="button" class="tk" data-t="${esc(x.ticker)}">${esc(x.ticker)} <span class="muted small">${x.last_score==null?"":x.last_score.toFixed(1)}</span></button>`).join(" ");
+    $("#histPanel").innerHTML = `<h2>History &middot; ${esc(t)}</h2>${chart(h.runs)}
+      <table><tr><th>Run</th><th class="n">Price</th><th class="n">Base</th><th class="n">Bear &ndash; bull</th><th class="n">Score</th><th>Verdict</th><th></th></tr>${rows}</table>
+      <h2 style="margin-top:16px">All tickers</h2><div class="files">${others}</div>`;
+    document.querySelectorAll("#histPanel tr.click").forEach(tr => tr.addEventListener("click", () => openRun(+tr.dataset.id)));
+    document.querySelectorAll("#histPanel .tk").forEach(b => b.addEventListener("click", async () => {
+      const x = b.dataset.t; await loadHistory(x); if (state.runs[0]) openRun(state.runs[0].id);
+    }));
+    if (selId) markSel(selId);
+  } catch(e) { banner("warn", "History: "+esc(e.message)); }
+}
+function markSel(id){ document.querySelectorAll("#histPanel tr.click").forEach(tr => tr.classList.toggle("sel", +tr.dataset.id===id)); }
+
+/* Price vs base value across runs. Only drawn with 2+ runs: one point is not a trend. */
+function chart(runs){
+  const r = runs.slice().reverse().filter(x => x.price!=null && x.base_value!=null);
+  if (r.length < 2) return `<div class="small muted" style="margin-bottom:8px">Run this ticker again later to see price vs base value over time.</div>`;
+  const W=560,H=150,L=48,R=10,T=12,B=22;
+  const ys = r.flatMap(x=>[x.price,x.base_value]); let lo=Math.min(...ys), hi=Math.max(...ys);
+  if (hi===lo){ hi+=1; lo-=1; } const pad=(hi-lo)*.08; lo-=pad; hi+=pad;
+  const X=i=>L+i*(W-L-R)/(r.length-1), Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+  const line=(k,c)=>`<polyline fill="none" stroke="${c}" stroke-width="2" points="${r.map((x,i)=>X(i)+","+Y(x[k])).join(" ")}"/>`;
+  const ticks=[lo+pad,(lo+hi)/2,hi-pad].map(v=>`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end">$${v.toFixed(0)}</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Price and base value over runs">${ticks}
+    ${line("price","var(--ink-2)")}${line("base_value","var(--s1)")}
+    <text x="${L}" y="${H-5}">${esc(r[0].run_at.slice(0,10))}</text><text x="${W-R}" y="${H-5}" text-anchor="end">${esc(r[r.length-1].run_at.slice(0,10))}</text></svg>
+    <div class="small" style="margin:2px 0 10px"><span style="color:var(--ink-2)">&#9644; price</span> &nbsp; <span style="color:var(--s1)">&#9644; base value</span></div>`;
+}
+
+/* -------------------------------------------------------------- card
+   Drawn on a canvas, not screenshotted from the DOM (Insider Desk lesson):
+   deterministic output, its own type scale, and a two-pass measure-then-draw
+   because resizing a canvas clears it and the height depends on wrapping. */
+const CP = {
+  dark:{ bg:"#1a1a19", panel:"#232322", ink1:"#ffffff", ink2:"#c3c2b7", ink3:"#898781", grid:"#2c2c2a",
+         line:"rgba(255,255,255,.12)", good:"#0ca30c", warn:"#fab219", bad:"#d03b3b", s1:"#3987e5" },
+  light:{ bg:"#fcfcfb", panel:"#f4f4f1", ink1:"#0b0b0b", ink2:"#52514e", ink3:"#898781", grid:"#e1e0d9",
+          line:"rgba(11,11,11,.12)", good:"#0ca30c", warn:"#c98500", bad:"#d03b3b", s1:"#2a78d6" },
+};
+const CW = 1080, PAD = 64, CMAXH = 2300;
+
+/* theme engine (dashboard): card colours and fonts follow the active theme; Paper = unchanged */
+function uwLabel(fb){ return (window.UWBrand && window.UWBrand.label) || fb; }  /* name from the dashboard: "Deep Current · Valuation" */
+function uwPal(base, dark) { return window.UWTheme ? window.UWTheme.pal(base, dark) : base; }
+function uwFont(size, fallback) { return window.UWTheme ? window.UWTheme.font(size >= 40 ? "head" : "body", fallback) : fallback; }
+window.addEventListener("uw-theme", () => drawCard());
+
+function drawCard(){
+  const c = state.current && state.current.card; if (!c) return;
+  const cv = $("#card"), P = uwPal(CP[state.cardTheme], state.cardTheme === "dark");
+  const S = state.cardMode === "short";
+  let h = layoutCard(cv.getContext("2d"), c, P, false, 0, S);
+  h = Math.min(CMAXH, h);
+  cv.width = CW; cv.height = h;
+  layoutCard(cv.getContext("2d"), c, P, true, h, S);
+}
+
+function layoutCard(x, c, P, paint, H, S){
+  const F = (sz, w) => { x.font = `${w||400} ${sz}px ${uwFont(sz, 'system-ui,-apple-system,"Segoe UI",sans-serif')}`; };
+  const T = (s, px_, py, col, align) => { if (!paint) return; x.textAlign = align||"left"; x.fillStyle = col; x.fillText(s, px_, py); x.textAlign = "left"; };
+  const vcol = P[c.colour] || P.ink1;
+  const rule = y => { if (paint){ x.strokeStyle = P.line; x.lineWidth = 1; x.beginPath(); x.moveTo(PAD,y); x.lineTo(CW-PAD,y); x.stroke(); } };
+  if (paint){ x.fillStyle = P.bg; x.fillRect(0,0,CW,H); x.textBaseline = "alphabetic"; }
+  let y = 84;
+
+  // ---- ticker + cap, score right-aligned (measured, never a guessed reserve)
+  F(76,700); T(c.ticker, PAD, y, P.ink1);
+  const tw = x.measureText(c.ticker).width;
+  F(22,400); T(`${c.marketcap} cap`, PAD + tw + 18, y - 8, P.ink3);
+  F(80,700); T(String(c.badge), CW - PAD - 58, y + 2, vcol, "right");
+  F(24,500); T("/ 10", CW - PAD, y + 2, P.ink3, "right");
+  y += 36;
+  F(22,700); T(`${c.verdict}  ·  ${c.stance.toUpperCase()}`, PAD, y, vcol);
+  F(20,400); T(`score ${c.score.toFixed(1)}`, CW - PAD, y, P.ink3, "right");
+  y += 30;
+  F(21,400); fitText(x, `${c.name}  ·  ${c.sector}  ·  ${c.class_label}`, PAD, y, CW-2*PAD, P.ink2, paint);
+
+  // ---- verdict box (full card only)
+  y += 26;
+  if (!S){
+  F(26,700);
+  const vl = wrap(x, `${c.verdict} — ${c.thesis}`, CW - 2*PAD - 44);
+  const boxH = 30 + vl.length*34;
+  if (paint){
+    x.fillStyle = P.panel; roundRect(x, PAD, y, CW-2*PAD, boxH, 12); x.fill();
+    x.fillStyle = vcol; roundRect(x, PAD, y, 8, boxH, 4); x.fill();
+  }
+  vl.forEach((l,i) => T(l, PAD + 30, y + 40 + i*34, P.ink1));
+  y += boxH + 44;
+  } else y += 30;
+
+  // ---- the whole result in a tweet (model 3.2)
+  if (c.synopsis){
+    F(20,600); T("IN A TWEET", PAD, y, P.ink3);
+    y += 34;
+    F(23,400);
+    wrap(x, c.synopsis, CW - 2*PAD).forEach(l => { T(l, PAD, y, P.ink1); y += 32; });
+    y += 30;
+  }
+
+  if (S){
+    // ---- summary card: four headline numbers in one row
+    const base = c.scenarios.find(s => s.name === "BASE") || c.scenarios[1];
+    const q = c.quality;
+    const stats = [["Price", c.price, P.ink1], ["Base value", base.value, P.ink1],
+                   ["Upside / downside", base.upside, base.up ? P.good : P.bad],
+                   ["Quality", q && q.score !== null && q.score !== undefined ? `${q.score.toFixed(1)} / 10` : "unknown",
+                    q && q.score !== null && q.score !== undefined ? (q.score >= 6 ? P.good : q.score >= 4 ? P.warn : P.bad) : P.ink3]];
+    const sw4 = (CW - 2*PAD - 3*16) / 4;
+    stats.forEach(([k, v, col], i) => {
+      const bx = PAD + i*(sw4 + 16);
+      if (paint){ x.fillStyle = P.panel; roundRect(x, bx, y, sw4, 104, 10); x.fill(); }
+      F(18,400); T(k, bx + 18, y + 32, P.ink3);
+      F(32,700); fitText(x, v, bx + 18, y + 78, sw4 - 30, col, paint);
+    });
+    y += 104 + 34;
+  } else {
+  // ---- key metrics, 2 x 4
+  F(20,600); T("KEY METRICS", PAD, y, P.ink3);
+  y += 16;
+  const colW = (CW - 2*PAD) / 2;
+  c.metrics.forEach((m, i) => {
+    const cx = PAD + (i % 2) * colW, cy = y + Math.floor(i/2) * 78;
+    F(19,400); T(m[0], cx, cy + 26, P.ink3);
+    F(32,600); T(m[1], cx, cy + 62, m[2] ? P[m[2]] : P.ink1);
+  });
+  y += 4 * 78 + 30;
+  }
+
+  // ---- valuation scenarios: a strip that puts the price among the three values
+  rule(y - 6); y += 36;
+  F(20,600); T("VALUATION SCENARIOS", PAD, y, P.ink3);
+  y += 24;
+  const vals = c.scenarios.map(s => s.per_share||0).concat([c.price_num]);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  if (hi - lo < 1e-9){ hi += 1; lo -= 1; }
+  const span = hi - lo; lo -= span*0.06; hi += span*0.06;
+  const SX = v => PAD + (CW-2*PAD) * (v - lo) / (hi - lo);
+  const sy = y + 34;
+  if (paint){
+    x.fillStyle = P.grid; roundRect(x, PAD, sy - 5, CW-2*PAD, 10, 5); x.fill();
+    const b0 = SX(c.scenarios[2].per_share||0), b1 = SX(c.scenarios[0].per_share||0);
+    x.fillStyle = P.s1; x.globalAlpha = .35; roundRect(x, b0, sy - 5, Math.max(4, b1-b0), 10, 5); x.fill(); x.globalAlpha = 1;
+    c.scenarios.forEach(s => { x.fillStyle = s.name==="BASE" ? P.s1 : P.ink2;
+      x.beginPath(); x.arc(SX(s.per_share||0), sy, s.name==="BASE"?11:8, 0, 2*Math.PI); x.fill(); });
+    x.strokeStyle = P.ink1; x.lineWidth = 3; x.beginPath(); x.moveTo(SX(c.price_num), sy-22); x.lineTo(SX(c.price_num), sy+22); x.stroke();
+  }
+  F(17,600); const pl = `price ${c.price}`; T(pl, clampX(SX(c.price_num), x, pl), sy - 30, P.ink1, "center");
+  // label each dot; stagger when two sit closer than their labels are wide
+  F(16,500);
+  const labs = c.scenarios.map(s => ({t: s.name.toLowerCase(), x: SX(s.per_share||0)})).sort((a,b)=>a.x-b.x);
+  labs.forEach((l, i) => { const near = i > 0 && l.x - labs[i-1].x < 56 && !labs[i-1].low; l.low = near;
+    T(l.t, clampX(l.x, x, l.t), sy + (near ? 50 : 32), P.ink3, "center"); });
+  y = sy + 64;
+  const bw = (CW - 2*PAD - 2*20) / 3;
+  c.scenarios.forEach((s, i) => {
+    const bx = PAD + i*(bw+20), col = s.up ? P.good : P.bad;
+    if (paint){ x.strokeStyle = col; x.lineWidth = 2; roundRect(x, bx, y, bw, 124, 10); x.stroke(); }
+    F(19,700); T(s.name, bx + 20, y + 32, col);
+    F(19,400); T(`${s.growth}/yr`, bx + bw - 18, y + 32, P.ink3, "right");
+    F(34,700); T(s.value, bx + 20, y + 76, P.ink1);
+    F(20,500); T(s.upside, bx + 20, y + 106, col);
+  });
+  y += 124 + 50;
+  if (S){
+    const qs_ = c.quality && c.quality.score !== null && c.quality.score !== undefined;
+    F(20,400);
+    fitText(x, `Score ${c.score.toFixed(1)} of 10 (10 = deeply undervalued, 0 = avoid)` + (qs_ ? ` · quality ${c.quality.tier || ""}` : "")
+            + ((c.gates||[]).some(g => g.applied) ? " · capped by a Buffett gate" : ""), PAD, y - 10, CW-2*PAD, P.ink2, paint);
+    y += 10;
+  } else {
+
+  // ---- quality x value (model 3.2): a 2x2 with this stock's dot, and the reasons
+  if (c.quality){
+    rule(y - 14); y += 22;
+    F(20,600); T("QUALITY × VALUE", PAD, y, P.ink3);
+    y += 20;
+    const G = 280, gx = PAD, gy = y;
+    const qs = c.quality.score, vs = c.valuation_points;
+    // x = valuation points 0..10; the vertical line is the margin-of-safety gate
+    // (25% margin = 33% upside = 6.67 points), the horizontal one quality 6
+    const XV = 5 + 5 * (1/(1-0.25) - 1), XQ = 6;
+    const gxp = v => gx + G * v/10, gyp = q => gy + G * (1 - q/10);
+    if (paint){
+      x.fillStyle = P.panel; roundRect(x, gx, gy, G, G, 10); x.fill();
+      x.fillStyle = P.good; x.globalAlpha = .16; x.fillRect(gxp(XV), gy, gx + G - gxp(XV), gyp(XQ) - gy); x.globalAlpha = 1;
+      x.strokeStyle = P.line; x.lineWidth = 1; x.setLineDash([5,4]);
+      x.beginPath(); x.moveTo(gxp(XV), gy); x.lineTo(gxp(XV), gy + G); x.moveTo(gx, gyp(XQ)); x.lineTo(gx + G, gyp(XQ)); x.stroke();
+      x.setLineDash([]);
+    }
+    F(12,700);
+    T("CHEAP + GOOD", gx + G - 8, gyp(XQ) - 8, P.good, "right");
+    T("GOOD, PRICEY", gx + 8, gy + 18, P.ink3);
+    T("VALUE TRAP?", gx + G - 8, gy + G - 10, P.warn, "right");
+    T("NEITHER", gx + 8, gy + G - 10, P.ink3);
+    F(13,400); T("value score →   (dashed line = 25% margin of safety)", gx, gy + G + 20, P.ink3);
+    if (qs !== null && qs !== undefined && paint){
+      const dx = gxp(Math.max(0.3, Math.min(9.7, vs))), dy = gyp(Math.max(0.3, Math.min(9.7, qs)));
+      x.fillStyle = vcol; x.beginPath(); x.arc(dx, dy, 12, 0, 2*Math.PI); x.fill();
+      x.strokeStyle = P.bg; x.lineWidth = 3; x.stroke();
+    }
+    // right column
+    const rx = gx + G + 40, rw = CW - PAD - rx;
+    let ry = gy + 30;
+    F(19,400); T("Quality & management", rx, ry, P.ink3);
+    F(30,700); T(qs === null ? "unknown" : `${qs.toFixed(1)} / 10`, rx, ry + 36,
+                 qs === null ? P.ink3 : (qs >= 6 ? P.good : qs >= 4 ? P.warn : P.bad));
+    F(18,400); T(qs === null ? `only ${c.quality.measured} of 100 pts measured` : `${c.quality.tier} · ${c.quality.measured}/100 pts measured`,
+                 rx + 190, ry + 32, P.ink3);
+    ry += 76;
+    const R_ = c.returns;
+    if (R_){
+      const pc = v => v === null || v === undefined ? "n/a" : `${v >= 0 ? "+" : ""}${(100*v).toFixed(1)}%/yr`;
+      F(19,400); T("If the price reaches value by year 10", rx, ry, P.ink3);
+      F(28,700); T(pc(R_.irr10), rx, ry + 34, (R_.irr10||0) >= R_.discount ? P.good : P.ink1);
+      F(18,400); T(`year 5: ${pc(R_.irr5)} · never re-rates: ${pc(R_.implied_return)}`, rx + 190, ry + 30, P.ink3);
+      ry += 70;
+    }
+    // gates, one line each
+    (c.gates || []).forEach(g => {
+      F(20,700); T(g.passed ? "✓" : "✗", rx, ry, g.passed ? P.good : (g.applied ? P.bad : P.ink3));
+      F(18,400); fitText(x, (g.key === "margin" ? "Margin of safety: " : "Quality gate: ") + g.value
+                 + (g.applied ? " — CAPPED" : ""), rx + 26, ry, rw - 26, g.applied ? P.bad : P.ink2, paint);
+      ry += 28;
+    });
+    y = Math.max(gy + G + 34, ry) + 10;
+    if (c.why){
+      F(19,400);
+      wrap(x, c.why, CW - 2*PAD).forEach(l => { T(l, PAD, y + 8, P.ink2); y += 27; });
+    }
+    y += 40;
+  }
+
+  // ---- risk / analysis: four named checks
+  rule(y - 14); y += 22;
+  F(20,600); T("RISK / ANALYSIS", PAD, y, P.ink3);
+  y += 12;
+  c.bullets.forEach(b => {
+    y += 34;
+    F(24,700); T(b.bad ? "✗" : "✓", PAD, y, b.bad ? P.bad : P.good);
+    F(22,400); fitText(x, b.text, PAD + 34, y, CW - 2*PAD - 34, P.ink1, paint);
+  });
+  y += 44;
+
+  // ---- score build: what carried the number (named, never "N of M agree")
+  F(20,600); T("SCORE BUILD", PAD, y, P.ink3);
+  y += 26;
+  // the bar is the score; the yellow tail is what red flags took off the valuation
+  const BX = PAD, BW = CW - 2*PAD, vw = BW * c.valuation_points/10, sw = BW * Math.max(0, c.score)/10;
+  if (paint){
+    x.fillStyle = P.grid; roundRect(x, BX, y, BW, 16, 8); x.fill();
+    if (vw - sw > 2){ x.fillStyle = P.warn; roundRect(x, BX, y, vw, 16, 8); x.fill(); }
+    if (sw > 2){ x.fillStyle = vcol; roundRect(x, BX, y, sw, 16, 8); x.fill(); }
+  }
+  y += 44;
+  F(20,400);
+  fitText(x, `Valuation ${c.valuation_points.toFixed(2)} \u2212 red flags ${c.flag_points.toFixed(2)} = `
+          + (c.score_uncapped < 0 ? `${c.score_uncapped.toFixed(2)}, floored at 0`
+             : ((c.gates||[]).some(g => g.applied) ? `${Math.max(0,c.score_uncapped).toFixed(1)}, capped at ${c.score.toFixed(1)} by the ${(c.gates||[]).filter(g=>g.applied).map(g=>g.key==="margin"?"margin-of-safety":"quality").join(" + ")} gate`
+             : `${c.score.toFixed(1)} of 10`))
+          + `  (10 = deeply undervalued, 0 = avoid)`,
+          PAD, y, CW-2*PAD, P.ink2, paint);
+  y += 44;
+
+  // ---- explanation
+  F(19,400);
+  wrap(x, c.explain, CW - 2*PAD).forEach(l => { T(l, PAD, y, P.ink2); y += 27; });
+  y += 18;
+
+  // ---- summary bullets
+  c.summary.forEach(([k, v]) => {
+    F(20,700); T(k + ":", PAD, y, P.ink1);
+    const kw = x.measureText(k + ": ").width;
+    F(20,400);
+    const lines = wrap(x, v, CW - 2*PAD - kw);
+    lines.forEach((l, i) => { T(l, PAD + kw, y, P.ink2); y += 28; });
+    y += 6;
+  });
+
+  }
+  // ---- footer: provenance on the image, because a PNG outlives the conversation
+  y += 14; rule(y); y += 36;
+  F(20,600); T(uwLabel("Valuation Desk"), PAD, y, P.ink2);
+  F(20,400); T(new Date().toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}), CW-PAD, y, P.ink3, "right");
+  y += 28;
+  F(17,400);
+  fitText(x, `Data: Unusual Whales API · ${c.basis} · model ${c.model_version}`
+          + (Object.keys(c.overrides).length ? " · WITH OVERRIDES" : "")
+          + " · Educational use only. Not financial advice.", PAD, y, CW-2*PAD, P.ink3, paint);
+  y += 40;
+  return y;
+}
+function clampX(px_, x, label){ const w = x.measureText(label).width/2 + 4; return Math.max(PAD + w, Math.min(CW - PAD - w, px_)); }
+function wrap(x, s, maxW){
+  const words = String(s).split(/\s+/), out = []; let line = "";
+  words.forEach(w => { const t = line ? line + " " + w : w;
+    if (x.measureText(t).width > maxW && line){ out.push(line); line = w; } else line = t; });
+  if (line) out.push(line); return out;
+}
+function fitText(x, s, px_, py, maxW, col, paint){
+  let t = String(s);
+  if (x.measureText(t).width > maxW){ while (t.length > 4 && x.measureText(t + "…").width > maxW) t = t.slice(0, -1); t += "…"; }
+  if (paint){ x.fillStyle = col; x.fillText(t, px_, py); }
+}
+function roundRect(x, px_, py, w, h, r){
+  r = Math.min(r, w/2, h/2); x.beginPath(); x.moveTo(px_+r, py); x.arcTo(px_+w, py, px_+w, py+h, r);
+  x.arcTo(px_+w, py+h, px_, py+h, r); x.arcTo(px_, py+h, px_, py, r); x.arcTo(px_, py, px_+w, py, r); x.closePath();
+}
+
+async function saveCard(auto){
+  const c = state.current; if (!c) return;
+  const prev = [state.cardTheme, state.cardMode];
+  const kinds = auto ? ["full", "short"] : [state.cardMode];
+  const saved = [];
+  try {
+    for (const k of kinds){
+      state.cardMode = k; if (auto) state.cardTheme = "dark"; drawCard();
+      const r = await api("/api/card/"+c.run_id, {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({png: $("#card").toDataURL("image/png"), kind: k})});
+      const name = r.path ? r.path.split(/[\\/]/).pop() : c.card.ticker + (k === "short" ? "_Short_Card.png" : "_Summary_Card.png");
+      c.files[k === "short" ? "short" : "png"] = name; saved.push(name);
+    }
+    $("#cardHint").textContent = `Saved ${saved.join(" and ")} to the run folder.`;
+  } catch(e) { banner("warn", "Card not saved: "+esc(e.message)); }
+  [state.cardTheme, state.cardMode] = prev; drawCard();
+  showCurrent();
+}
+
+$("#cardTheme").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.cardTheme = b.dataset.t;
+  [...e.currentTarget.children].forEach(n => n.classList.toggle("on", n===b));
+  drawCard();
+});
+$("#cardMode").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.cardMode = b.dataset.m;
+  [...e.currentTarget.children].forEach(n => n.classList.toggle("on", n===b));
+  drawCard();
+});
+$("#dlBtn").addEventListener("click", () => {
+  const c = state.current; if (!c) return;
+  const a = document.createElement("a"); a.download = `${c.card.ticker}_${state.cardMode === "short" ? "Short" : "Summary"}_Card.png`;
+  a.href = $("#card").toDataURL("image/png"); a.click();
+});
+$("#copyBtn").addEventListener("click", () => {
+  $("#card").toBlob(async b => { try { await navigator.clipboard.write([new ClipboardItem({"image/png": b})]);
+    $("#cardHint").textContent = "Copied to clipboard."; } catch(e){ $("#cardHint").textContent = "Copy failed: " + e.message; } });
+});
+$("#saveBtn").addEventListener("click", () => saveCard(false));
+$("#themeBtn").addEventListener("click", () => {
+  const r = document.documentElement, next = r.getAttribute("data-theme")==="dark" ? "light" : "dark";
+  r.setAttribute("data-theme", next); $("#themeBtn").textContent = next==="dark" ? "Light" : "Dark";
+});
+
+(async function init(){
+  await health();
+  loadScreens();
+  try {
+    const tk = await api("/api/tickers");
+    if (tk.tickers.length){ await loadHistory(tk.tickers[0].ticker); if (state.runs[0]) openRun(state.runs[0].id); }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

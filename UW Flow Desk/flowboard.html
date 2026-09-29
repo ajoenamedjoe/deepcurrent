@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Unusual Flow Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  /* Same tokens as the five sibling desks, so all six read as one system. */
+  --ground:#fcfcfb; --panel:#ffffff; --panel-2:#f4f4f1; --line:#e2e1dc; --line-soft:#edece8;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#84827b;
+  --accent:#2a78d6; --accent-soft:#2a78d61f;
+  --bull:#1baf7a; --bear:#e34948; --pend:#eda100; --violet:#4a3aa7;
+  --meter-track:#e8e7e2;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:3px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#1a1a19; --panel:#232321; --panel-2:#2b2b28; --line:#3a3a36; --line-soft:#2f2f2c;
+    --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#8d8c82;
+    --accent:#3987e5; --accent-soft:#3987e529;
+    --bull:#199e70; --bear:#e66767; --pend:#c98500; --violet:#9085e9;
+    --meter-track:#34342f;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#1a1a19; --panel:#232321; --panel-2:#2b2b28; --line:#3a3a36; --line-soft:#2f2f2c;
+  --ink:#ffffff; --ink-2:#c3c2b7; --ink-3:#8d8c82;
+  --accent:#3987e5; --accent-soft:#3987e529;
+  --bull:#199e70; --bear:#e66767; --pend:#c98500; --violet:#9085e9;
+  --meter-track:#34342f;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  padding-block:0 48px;padding-left:20px;padding-right:20px;max-width:1360px;margin:0 auto}
+h1,h2,h3{margin:0;text-wrap:balance}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.lbl{font-family:var(--cond);font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;font-size:11px;color:var(--ink-3)}
+
+/* ---------- header ---------- */
+header{padding-block:28px 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 14px}
+.brand h1{font-family:var(--cond);font-weight:700;font-size:30px;letter-spacing:-.01em}
+.tape{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.rule{margin-top:14px;font-size:14px;color:var(--ink-2);max-width:66ch}
+.rule b{color:var(--ink);font-weight:600}
+.stats{display:flex;flex-wrap:wrap;gap:22px;margin-top:16px}
+.stat .v{font-family:var(--mono);font-size:21px;font-weight:500;line-height:1.1}
+.stat .k{font-family:var(--cond);font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;font-size:10px;color:var(--ink-3);margin-top:3px}
+
+/* ---------- lanes ---------- */
+nav{display:flex;flex-wrap:wrap;gap:6px;padding-block:16px;position:sticky;top:0;
+  background:var(--ground);z-index:5;border-bottom:1px solid var(--line-soft)}
+.lane-btn{font-family:var(--cond);font-weight:600;font-size:13px;letter-spacing:.03em;
+  background:none;border:1px solid var(--line);color:var(--ink-2);
+  padding:6px 12px;border-radius:var(--r);cursor:pointer;display:flex;gap:7px;align-items:center}
+.lane-btn:hover{border-color:var(--ink-3);color:var(--ink)}
+.lane-btn[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.lane-btn .c{font-family:var(--mono);font-size:11px;opacity:.7}
+.lane-note{font-size:13px;color:var(--ink-2);padding-block:14px 2px;max-width:72ch}
+
+/* ---------- grid ---------- */
+.grid{display:grid;gap:14px;align-items:start;margin-top:14px;
+  grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+
+/* ---------- card ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px 16px 14px;display:flex;flex-direction:column;gap:13px}
+.card.out{opacity:.72}
+.chead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.tkr{font-family:var(--cond);font-weight:700;font-size:27px;line-height:1;letter-spacing:-.01em}
+.sect{font-size:11.5px;color:var(--ink-3);margin-top:5px}
+.scorewrap{text-align:right;flex:none}
+.score{font-family:var(--mono);font-size:30px;font-weight:500;line-height:1}
+.score .of{font-size:13px;color:var(--ink-3)}
+.pill{display:inline-block;font-family:var(--cond);font-weight:600;font-size:11px;
+  letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:2px;
+  border:1px solid currentColor;margin-top:6px}
+.bull{color:var(--bull)} .bear{color:var(--bear)} .undir{color:var(--ink-3)}
+
+/* ask / bid split — the >75% ask gate made physical */
+.split{display:flex;flex-direction:column;gap:5px}
+.splitbar{display:flex;height:9px;border-radius:2px;overflow:hidden;background:var(--meter-track);gap:2px}
+.splitbar i{display:block;height:100%}
+.splitbar .a{background:var(--accent)}
+.splitbar .b{background:var(--ink-3);opacity:.55}
+.splitrow{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--ink-2)}
+.splitrow .num{color:var(--ink)}
+/* The 75% gate tick sits ON the bar it refers to and the words live in the row
+   below. A floating caption above the bar collided with the direction pill. */
+.splitbar{position:relative}
+.splitbar .gate{position:absolute;top:-3px;left:75%;width:2px;height:15px;
+  background:var(--ground);border-radius:1px;z-index:1}
+.gatelab{font-family:var(--cond);font-weight:600;font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-3)}
+
+/* the print itself, OSI beside its decode */
+.print{background:var(--panel-2);border-radius:var(--r);padding:10px 11px;display:flex;
+  flex-direction:column;gap:4px}
+.osi{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.02em;
+  overflow-x:auto;white-space:nowrap}
+.decoded{font-family:var(--cond);font-weight:600;font-size:15.5px;letter-spacing:.01em}
+.printfacts{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin-top:2px}
+.printfacts .num{color:var(--ink)}
+
+/* six meters */
+/* Six components on ONE shared scale.
+   The TRACK length is the component's maximum weight and the FILL is what it
+   earned, so bar length is directly comparable in points across rows: a
+   24-point component is three times the length of an 8-point one, and a full
+   bar means maxed rather than "nearly full out of a small total".
+   Equal-length tracks implied every component was worth the same, which made
+   Aggression 24.0/24 and Premium 6.6/8 look alike when one is 3.6x the other. */
+.meters{display:flex;flex-direction:column;gap:7px}
+/* 76px let "AGGRESSION" run flush into the bar with no gap. 86 + the grid gap
+   keeps the longest label clear of the scale at every width. */
+.meter{display:grid;grid-template-columns:86px 1fr 56px;gap:10px;align-items:center}
+.meter .mn{font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+.scale{position:relative;height:8px}
+/* display:block is load-bearing. These were <span>s, and width does not apply
+   to non-replaced INLINE elements -- every fill computed to 0px wide while its
+   style said "width:62.8%", so all six rows rendered as identical empty grey
+   tracks. Absolute positioning also anchors every bar to one left baseline. */
+.track,.fill{position:absolute;left:0;top:0;display:block;height:8px;
+  border-radius:0 3px 3px 0}
+.track{background:var(--meter-track)}
+.fill{background:var(--accent)}
+.fill.zero{background:var(--ink-3);opacity:.45;width:2px!important;border-radius:1px}
+.fill.unmeasured{background:repeating-linear-gradient(135deg,
+  var(--ink-3) 0 3px,transparent 3px 6px);opacity:.55}
+.meter .mv{font-family:var(--mono);font-size:11.5px;text-align:right;color:var(--ink)}
+.meter .mv .of{color:var(--ink-3)}
+.meter[data-max="true"] .mn{color:var(--ink)}
+.meter[data-max="true"] .fill{background:var(--accent)}
+.mkey{font-size:11px;color:var(--ink-3);margin-top:1px}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:11px;font-family:var(--cond);font-weight:600;letter-spacing:.04em;
+  padding:2.5px 7px;border-radius:2px;background:var(--panel-2);color:var(--ink-2);
+  border:1px solid var(--line-soft)}
+.chip.ok{color:var(--bull);border-color:currentColor}
+.chip.warn{color:var(--pend);border-color:currentColor}
+.chip.bad{color:var(--bear);border-color:currentColor}
+.chip.hot{color:var(--accent);border-color:currentColor}
+
+.why{font-size:12.5px;color:var(--ink-2);border-left:2px solid var(--line);padding-left:9px}
+.why b{color:var(--ink);font-weight:600}
+.cfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border-top:1px solid var(--line-soft);padding-top:10px}
+.share-btn{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.04em;white-space:nowrap;
+  background:none;border:1px solid var(--line);color:var(--ink-2);
+  padding:5px 11px;border-radius:var(--r);cursor:pointer}
+.share-btn:hover{border-color:var(--accent);color:var(--accent)}
+.carried{font-size:11.5px;color:var(--ink-3)}
+
+/* ---------- share panel ---------- */
+.modal{position:fixed;inset:0;background:#000000b8;display:none;z-index:50;
+  padding:20px;overflow:auto}
+.modal[data-open="true"]{display:flex;align-items:flex-start;justify-content:center}
+.sheet{background:var(--ground);border:1px solid var(--line);border-radius:var(--r);
+  padding:18px;max-width:660px;width:100%;display:flex;flex-direction:column;gap:14px;
+  margin-block:auto}
+.sheet h2{font-family:var(--cond);font-weight:700;font-size:19px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.04em;
+  border:1px solid var(--line);background:none;color:var(--ink-2);
+  padding:5px 11px;border-radius:var(--r);cursor:pointer}
+.opt[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+#shot{width:100%;height:auto;border:1px solid var(--line);border-radius:var(--r);display:block;
+  background:var(--panel-2)}
+.cap{width:100%;min-height:82px;font-family:var(--sans);font-size:13.5px;line-height:1.5;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:var(--r);padding:10px;resize:vertical}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.hint{font-size:12px;color:var(--ink-3)}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- tape panel ---------- */
+.tape-sheet{max-width:1080px}
+.tape-sheet .sub{font-size:13px;color:var(--ink-2)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.pickrow{display:flex;gap:6px;flex-wrap:wrap}
+.pickrow .opt{font-family:var(--mono);font-weight:500;letter-spacing:0;text-transform:none}
+.tsum{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-2)}
+.tsum .num{color:var(--ink)}
+.twrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+table.tape{border-collapse:collapse;width:100%;font-size:12.5px;min-width:760px}
+table.tape th{font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);background:var(--panel-2);
+  position:sticky;top:0}
+table.tape td{padding:6px 9px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+table.tape td.n,table.tape th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+table.tape tr.cx td{color:var(--ink-3);text-decoration:line-through}
+.side-ask{color:var(--accent);font-weight:600}
+.side-bid,.side-none{color:var(--ink-3)}
+.flag{display:inline-block;font-family:var(--cond);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:2px;padding:0 5px;margin-right:3px;color:var(--ink-2)}
+.tape-empty{padding:18px;font-size:13px;color:var(--ink-2)}
+.uwlink{font-size:12.5px;color:var(--accent);text-decoration:none}
+.uwlink:hover{text-decoration:underline}
+.cfoot .btns{display:flex;gap:6px}
+
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-3);display:flex;flex-direction:column;gap:7px;max-width:78ch}
+footer b{color:var(--ink-2);font-weight:600}
+@media (max-width:430px){
+  body{padding-left:16px;padding-right:16px}
+  .grid{grid-template-columns:1fr}
+  .brand h1{font-size:25px}
+  /* 66px clipped "AGGRESSION" to "AGGRESSIC…" at 400px. Measured, not guessed. */
+  .meter{grid-template-columns:78px 1fr 50px;gap:8px}
+  .meter .mn{font-size:10px;letter-spacing:.03em}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script src="http://127.0.0.1:8700/theme.js?desk=flow"></script>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1 data-uw-name>Unusual Flow Desk</h1>
+    <span class="tape" id="tape"></span>
+  </div>
+  <p class="rule">Single-leg option flow where the buyer is <b>lifting the offer</b>, scored 0&ndash;100.
+    A ticker reaches the board on <b>ask side &ge; 75%</b> of directional volume with at least
+    <b>$100k bought</b>. Everything else is in a lane with a stated reason &mdash; nothing
+    disappears quietly.</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<p id="warnbar" class="why" style="display:none;color:var(--bear);border-left-color:var(--bear);margin:12px 0"></p>
+<p id="staleness" class="lane-note" style="color:var(--pend)"></p>
+<nav id="lanes" aria-label="Lanes"></nav>
+<p class="lane-note" id="laneNote"></p>
+<div class="grid" id="grid"></div>
+
+<footer>
+  <div><b>How the score is built.</b> Aggression 24 &middot; Sweep &amp; floor 18 &middot;
+    Opening evidence 20 &middot; Unusual for this ticker 18 &middot; Urgency 12 &middot;
+    Premium 8. They total exactly 100, so the composite never needs clipping.
+    Premium carries the smallest weight on purpose: it is the number that ranks the
+    biggest, most liquid names first no matter what they are doing.</div>
+  <div><b>Open interest is tomorrow&rsquo;s news.</b> OI updates once the next morning, so
+    today&rsquo;s flow is scored on volume-over-OI and size-over-OI and is marked
+    <i>awaiting confirmation</i> until the morning print either confirms or contradicts it.</div>
+  <div><b>Highest score recorded on this tape: <span class="num" id="obsmax"></span></b>
+    &mdash; the scale calibrates against what the desk has actually seen, not against a
+    theoretical 100.</div>
+  <div>Flow data from Unusual Whales. A snapshot of one session, not a live read, and not
+    investment advice.</div>
+</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet">
+    <h2 id="sheetTitle">Share card</h2>
+    <div class="opts">
+      <button class="opt" id="optDetail" aria-pressed="true">Detailed</button>
+      <button class="opt" id="optAnon" aria-pressed="false">No ticker</button>
+      <span style="width:10px"></span>
+      <button class="opt" id="optDark" aria-pressed="true">Dark</button>
+      <button class="opt" id="optLight" aria-pressed="false">Light</button>
+    </div>
+    <canvas id="shot" width="1080" height="1350"></canvas>
+    <div>
+      <div class="lbl" style="margin-bottom:6px">Caption &mdash; edit freely, never baked into the image</div>
+      <textarea class="cap" id="cap" aria-label="Caption"></textarea>
+    </div>
+    <div class="actions">
+      <button class="opt" id="btnCopy">Copy image</button>
+      <button class="opt" id="btnDl">Download PNG</button>
+      <button class="opt" id="btnCapCopy">Copy caption</button>
+      <button class="opt" id="btnClose">Close</button>
+      <span class="hint" id="hint"></span>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="tapeModal" role="dialog" aria-modal="true" aria-labelledby="tapeTitle">
+  <div class="sheet tape-sheet">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+      <div><h2 id="tapeTitle">Tape</h2><div class="sub" id="tapeSub"></div></div>
+      <a class="uwlink" id="tapeUw" target="_blank" rel="noopener">Open on Unusual Whales &#8599;</a>
+    </div>
+    <div class="tabs">
+      <button class="opt" id="tabAlert" aria-pressed="true">This alert</button>
+      <button class="opt" id="tabContract" aria-pressed="false">Contract today</button>
+    </div>
+    <div class="pickrow" id="tapePick"></div>
+    <div class="tsum" id="tapeSum"></div>
+    <div class="twrap" id="tapeBody"></div>
+    <div class="actions"><button class="opt" id="tapeClose">Close</button>
+      <span class="hint">Times are US Eastern. Side is where the print hit the quote: at the ask means a buyer paid up.</span></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* Desk build: the board comes from the local server, which scans on its own
+   thread every 5 minutes whether or not a tab is open. flowboard.html is read
+   from disk per request, so a UI change needs a reload and nothing more -- but
+   a STALE TAB looks identical to a failed deploy, which is why the server
+   stamps the served file's mtime into the footer. */
+var DATA = {meta:{counts:{board:0,spreads:0,near:0,out:0},session:'',captured_et:'',
+  alerts:0,contracts:0,tickers:0,observed_max:0,warnings:[],status:''},cards:[]};
+var META = DATA.meta, CARDS = DATA.cards;
+
+/* ---------- formatting ---------- */
+function usd(n){
+  if(n==null) return '--';
+  var a=Math.abs(n);
+  if(a>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+  if(a>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+  if(a>=1e3) return '$'+Math.round(n/1e3)+'k';
+  return '$'+Math.round(n);
+}
+function pct(n,d){ return n==null? '--' : (n*100).toFixed(d==null?0:d)+'%'; }
+function cnum(n){ return n==null? '--' : n.toLocaleString('en-US'); }
+var MON=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+/* Decode an OSI option symbol. Printing the decode directly beneath the raw
+   symbol is a free correctness check: if the parser is wrong, the two lines
+   disagree in the same glance. */
+function decodeOsi(sym){
+  if(!sym) return null;
+  var m=/^([A-Z]+)(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/.exec(sym);
+  if(!m) return null;
+  var strike=parseInt(m[6],10)/1000;
+  return {root:m[1], y:2000+ +m[2], mo:+m[3], d:+m[4],
+          cp:m[5]==='C'?'CALL':'PUT', strike:strike,
+          text:m[1]+' $'+(strike%1?strike.toFixed(2):strike)+' '+(m[5]==='C'?'CALL':'PUT')+
+               ' · '+m[4]+' '+MON[+m[3]-1]+' '+m[2]};
+}
+function dteOf(expiry, session){
+  if(!expiry||!session) return null;
+  return Math.round((Date.parse(expiry+'T00:00:00Z')-Date.parse(session+'T00:00:00Z'))/864e5);
+}
+/* Short labels: "Sweep / floor" wrapped to two lines in the 76px label column
+   and made every meter row a different height. */
+var METERS=[
+  ['aggression','Aggression'],['sweep','Sweep'],['opening','Opening'],
+  ['relative','Vs ticker'],['urgency','Urgency'],['conviction','Premium']
+];
+var LANES=[
+  ['board','Board','Ask side at or above 75% of directional volume, at least $100k bought, single-leg, and the evidence survived the contamination checks.'],
+  ['spreads','Spreads','Real institutional size, ambiguous direction. A spread leg can print 100% on the ask and still be the short half of somebody else’s trade.'],
+  ['near','Near miss','60–75% ask side. One step below the gate, kept visible so a name does not vanish and reappear as the session fills in.'],
+  ['out','Filtered out','Every rejection states its reason.']
+];
+
+/* ---------- card rendering ---------- */
+function topContract(c){ return (c.contracts&&c.contracts[0])||null; }
+
+function evidenceChips(c){
+  var out=[], d=c.detail, tc=topContract(c);
+  var oi=d.opening.oi_state, g=d.opening.oi_growth;
+  /* A growth of 0.004 rounded to "OI up 0% on the day", which reads as a
+     measurement claiming nothing. Anything that rounds to zero is flat. */
+  var rounded = g==null? null : Math.round(g*100);
+  if(oi==='pending') out.push(['warn','OI confirms tomorrow']);
+  else if(oi==='confirmed' && rounded>0) out.push(['ok','OI up '+rounded+'% on the day']);
+  else if(oi==='contradicted' && rounded<0) out.push(['bad','OI fell '+Math.abs(rounded)+'%']);
+  else out.push(['','OI flat on the session']);
+  if(d.opening.volume_over_oi>=2)
+    out.push(['hot', (d.opening.volume_over_oi>=100? Math.round(d.opening.volume_over_oi): d.opening.volume_over_oi.toFixed(1))+'× volume vs OI']);
+  if(d.opening.size_greater_than_oi) out.push(['hot','One order larger than all open interest']);
+  if(d.sweep.strongest_rule) out.push([d.sweep.strongest_rule==='SweepsFollowedByFloor'?'hot':'', d.sweep.strongest_rule.replace(/([a-z])([A-Z])/g,'$1 $2')]);
+  if(d.sweep.sweep_premium_share>0.15) out.push(['', pct(d.sweep.sweep_premium_share)+' swept or crossed on the floor']);
+  if(d.sweep.fill_urgency>=1) out.push(['hot','Fills walked up the offers']);
+  if(d.opening.days_of_oi_increases>=3) out.push(['ok', d.opening.days_of_oi_increases+' straight sessions of OI growth']);
+  if(tc && tc.ask_side_perc_7_day!=null && parseFloat(tc.ask_side_perc_7_day)>=0.75)
+    out.push(['ok','Ask-led '+pct(parseFloat(tc.ask_side_perc_7_day))+' of the last 7 sessions']);
+  var dte=d.urgency.min_dte;
+  if(dte!=null) out.push([dte===0?'warn':'', dte===0?'Expires today':(dte+' days to expiry')]);
+  if(d.urgency.distinct_contracts>=3)
+    out.push(['', d.urgency.distinct_contracts+' strikes hit, '+d.urgency.transactions+' transactions']);
+  if(c.undetermined_premium>0)
+    out.push(['warn', usd(c.undetermined_premium)+' printed with no side']);
+  return out;
+}
+
+function cardEl(c){
+  var el=document.createElement('article');
+  el.className='card'+(c.lane==='out'?' out':'');
+  var tc=topContract(c), dec=tc?decodeOsi(tc.option_symbol):null;
+  var dirCls = c.direction==='bullish'?'bull':(c.direction==='bearish'?'bear':'undir');
+  var dirTxt = c.direction? c.direction : 'no direction';
+
+  var h='';
+  h+='<div class="chead"><div><div class="tkr">'+esc(c.ticker)+'</div>'+
+     '<div class="sect">'+esc(c.sector||'')+'</div></div>'+
+     '<div class="scorewrap"><div class="score">'+c.score.toFixed(1)+
+     '<span class="of">/100</span></div>'+
+     '<div class="pill '+dirCls+'">'+dirTxt+'</div></div></div>';
+
+  /* ask vs bid split, with the 75% gate drawn on it */
+  var bought=c.ask_premium, other=c.opposing_premium+c.sold_premium+c.opposing_sold_premium;
+  var share=c.ask_share;
+  h+='<div class="split"><div class="splitbar">'+
+     (share!=null? '<i class="a" style="width:'+(share*100).toFixed(1)+'%"></i><i class="b" style="width:'+((1-share)*100).toFixed(1)+'%"></i><span class="gate"></span>'
+                 : '<i class="b" style="width:100%"></i>')+
+     '</div>'+
+     '<div class="splitrow"><span>Ask side <span class="num">'+
+        (share!=null?pct(share,1):'not measured')+'</span>'+
+        (share!=null?' <span class="gatelab">vs 75% gate</span>':'')+'</span>'+
+     '<span>Bought <span class="num">'+usd(bought)+'</span></span></div>';
+  /* Only render a side that actually has money on it. A row reading "$0" is
+     noise, not a measurement. */
+  var extra=[];
+  if(c.sold_premium>0) extra.push((c.direction==='bearish'?'Calls written':'Puts written')+
+    ' <span class="num" style="color:var(--ink-2)">'+usd(c.sold_premium)+'</span>');
+  if(c.opposing_premium>0) extra.push('Other side <span class="num" style="color:var(--ink-2)">'+
+    usd(c.opposing_premium)+'</span>');
+  if(extra.length){
+    h+='<div class="splitrow" style="color:var(--ink-3)">'+
+       extra.map(function(s){return '<span>'+s+'</span>';}).join('')+'</div>';
+  }
+  h+='</div>';
+
+  /* the print */
+  if(dec && tc){
+    var dte=dteOf(tc.expiry, c.session);
+    h+='<div class="print"><div class="osi">'+tc.option_symbol+'</div>'+
+       '<div class="decoded">'+dec.text+'</div>'+
+       '<div class="printfacts">'+
+       '<span>Vol <span class="num">'+cnum(tc.volume)+'</span></span>'+
+       '<span>OI <span class="num">'+cnum(tc.open_interest)+'</span></span>'+
+       '<span>Prem <span class="num">'+usd(parseFloat(tc.premium))+'</span></span>'+
+       (dte!=null?'<span><span class="num">'+dte+'</span>d</span>':'')+
+       '</div></div>';
+  }
+
+  /* Six meters on one shared scale. The widest weight sets the scale, so the
+     track shows the component's ceiling and the fill shows what it earned --
+     both measured in the same points, both comparable down the column. */
+  var SCALE=Math.max.apply(null,METERS.map(function(m){return c.max_parts[m[0]]||0;}));
+  h+='<div class="meters">';
+  METERS.forEach(function(m){
+    var v=c.parts[m[0]]||0, mx=c.max_parts[m[0]]||0;
+    var unmeasured = (m[0]==='aggression' && !c.detail.aggression.measured);
+    var maxed = !unmeasured && mx>0 && v>=mx-0.05;
+    var trackPct = SCALE? (mx/SCALE*100) : 0;
+    var fillPct  = SCALE? (Math.max(0,Math.min(mx,v))/SCALE*100) : 0;
+    var tip = unmeasured
+      ? m[1]+': not measurable on this name'
+      : m[1]+': '+v.toFixed(1)+' of a possible '+mx+' points';
+    h+='<div class="meter" data-max="'+maxed+'" title="'+tip+'">'+
+       '<span class="mn">'+m[1]+'</span>'+
+       '<span class="scale">'+
+         '<span class="track" style="width:'+trackPct.toFixed(1)+'%"></span>'+
+         '<span class="fill'+(unmeasured?' unmeasured':'')+(v<=0?' zero':'')+
+           '" style="width:'+(unmeasured?trackPct:fillPct).toFixed(1)+'%"></span>'+
+       '</span>'+
+       '<span class="mv">'+(unmeasured
+         ? '<span class="of">n/a</span>'
+         : v.toFixed(1)+'<span class="of">/'+mx+'</span>')+'</span></div>';
+  });
+  h+='</div>';
+  h+='<div class="mkey">Bar length is points; a full bar means that component '
+   + 'is maxed.</div>';
+
+  var chips=evidenceChips(c);
+  if(chips.length){
+    h+='<div class="chips">'+chips.map(function(x){
+      return '<span class="chip '+x[0]+'">'+esc(x[1])+'</span>';}).join('')+'</div>';
+  }
+
+  if(c.excluded){
+    h+='<div class="why"><b>Not on the board:</b> '+c.excluded+'</div>';
+  } else if(c.modifier_notes.length){
+    h+='<div class="why"><b>Scored down '+pct(1-c.modifier)+':</b> '+
+       c.modifier_notes.map(function(n){return n.detail;}).join('; ')+'</div>';
+  }
+
+  h+='<div class="cfoot"><span class="carried">Carried by '+
+     c.carried_by.map(function(k){
+       var f=METERS.filter(function(m){return m[0]===k;})[0];
+       return f?f[1].toLowerCase():k;}).join(' + ')+
+     '</span><span class="btns">'+
+     ((c.alerts&&c.alerts.length)||(c.contracts&&c.contracts.length)
+       ? '<button class="share-btn tape-btn">Show tape</button>' : '')+
+     '<button class="share-btn" data-t="'+esc(c.ticker)+'">Share card</button></span></div>';
+
+  el.innerHTML=h;
+  el.querySelector('.share-btn[data-t]').addEventListener('click',function(){ openShare(c); });
+  var tb=el.querySelector('.tape-btn');
+  if(tb) tb.addEventListener('click',function(){ openTape(c); });
+  return el;
+}
+
+/* ---------- board ---------- */
+var activeLane='board';
+function renderStats(){
+  var bits=['session '+(META.session||'—')];
+  if(META.captured_et) bits.push('captured '+META.captured_et+' ET');
+  if(META.tickers) bits.push(META.alerts+' alerts, '+META.contracts+
+    ' contracts, '+META.tickers+' tickers');
+  if(META.status) bits.push(META.status);
+  document.getElementById('tape').textContent = bits.join(' · ');
+  /* "Highest score recorded on this tape: 0.0" claims a measurement that has
+     not happened. Nothing recorded yet is a dash, not a zero. */
+  document.getElementById('obsmax').textContent =
+    (META.observed_max == null || !META.tickers) ? '—'
+      : META.observed_max.toFixed(1);
+  var s=[['On the board',META.counts.board],['Spreads',META.counts.spreads],
+         ['Near miss',META.counts.near],['Filtered out',META.counts.out]];
+  document.getElementById('stats').innerHTML = s.map(function(x){
+    return '<div class="stat"><div class="v">'+x[1]+'</div><div class="k">'+x[0]+'</div></div>';
+  }).join('');
+}
+function renderLanes(){
+  var nav=document.getElementById('lanes');
+  nav.innerHTML = LANES.map(function(l){
+    return '<button class="lane-btn" id="lane-'+l[0]+'" data-l="'+l[0]+'" aria-pressed="'+
+      (l[0]===activeLane)+'">'+l[1]+' <span class="c">'+META.counts[l[0]]+'</span></button>';
+  }).join('');
+  Array.prototype.forEach.call(nav.querySelectorAll('.lane-btn'),function(b){
+    b.addEventListener('click',function(){ activeLane=b.dataset.l; renderLanes(); renderGrid(); });
+  });
+  var note=LANES.filter(function(l){return l[0]===activeLane;})[0];
+  document.getElementById('laneNote').textContent = note?note[2]:'';
+}
+var LOADED=false;
+function esc(s){ return String(s==null?'':s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function renderGrid(){
+  var g=document.getElementById('grid');
+  g.innerHTML='';
+  var rows=CARDS.filter(function(c){return c.lane===activeLane;});
+  if(!rows.length){
+    /* An empty grid with no words reads as a broken page. Say which empty
+       this is: nothing scanned yet, or nothing qualified. */
+    var el=document.createElement('p');
+    el.className='lane-note';
+    el.style.color='var(--ink-3)';
+    /* Three different empties, three different sentences. "No qualifying flow
+       in this session yet" is wrong on a Saturday: the desk is not screening
+       and finding nothing, it is not screening. */
+    if(CARDS.length){
+      el.textContent = 'Nothing in this lane right now. Try the other lanes above.';
+    } else if(META.market_open === false){
+      el.textContent = 'The market is closed, so there is nothing to scan. '
+        + 'The desk starts again ' + (META.next_session || 'at the next open')
+        + ' and the board fills in through the session. Leave it running.';
+    } else if(!LOADED || !META.scans){
+      el.textContent = 'Waiting for the first scan — it runs within a few '
+        + 'minutes of the desk starting.';
+    } else {
+      el.textContent = 'Nothing has qualified yet this session.';
+    }
+    g.appendChild(el);
+    return;
+  }
+  rows.forEach(function(c){ g.appendChild(cardEl(c)); });
+}
+
+/* ---------- tape ---------- */
+/* The prints behind a card. "This alert" = the trades UW grouped into one flow
+   alert (/api/option-trades/flow-alerts/{id}); "Contract today" = the contract's
+   last 50 prints (/api/option-contract/{OSI}/flow). Fetched on demand from this
+   desk's own server, which holds the token. */
+var TAPE={card:null, tab:'alert', key:null};
+function uwLink(t){ return 'https://unusualwhales.com/live-options-flow?ticker_symbol='+encodeURIComponent(t); }
+function hhmm(ms){
+  if(ms==null) return '';
+  var d=new Date(typeof ms==='number'? ms : Date.parse(ms));
+  return isNaN(d)? '' : d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+function openTape(c){
+  TAPE.card=c;
+  TAPE.tab=(c.alerts&&c.alerts.length)? 'alert' : 'contract';
+  TAPE.key=null;
+  document.getElementById('tapeTitle').textContent=c.ticker+' — tape';
+  document.getElementById('tapeUw').href=uwLink(c.ticker);
+  document.getElementById('tapeModal').dataset.open='true';
+  renderTapeTabs();
+  document.getElementById('tapeClose').focus();
+}
+function closeTape(){ document.getElementById('tapeModal').dataset.open='false'; TAPE.card=null; }
+function renderTapeTabs(){
+  var c=TAPE.card, ta=document.getElementById('tabAlert'), tc=document.getElementById('tabContract');
+  ta.setAttribute('aria-pressed', String(TAPE.tab==='alert'));
+  tc.setAttribute('aria-pressed', String(TAPE.tab==='contract'));
+  ta.disabled=!(c.alerts&&c.alerts.length); tc.disabled=!(c.contracts&&c.contracts.length);
+  var items = TAPE.tab==='alert' ? (c.alerts||[]).map(function(a){
+      var d=decodeOsi(a.option_chain);
+      return {key:a.id, label:(d?d.text:(a.option_chain||'alert'))+' · '+(a.alert_rule||'alert')+' · '+
+        usd(parseFloat(a.total_premium))+(a.start_time?' · '+hhmm(a.start_time):'')};
+    }) : (c.contracts||[]).map(function(k){
+      var d=decodeOsi(k.option_symbol);
+      return {key:k.option_symbol, label:(d?d.text:k.option_symbol)+' · '+usd(parseFloat(k.premium))};
+    });
+  if(!TAPE.key || !items.some(function(i){return i.key===TAPE.key;})) TAPE.key=items.length? items[0].key : null;
+  document.getElementById('tapePick').innerHTML = items.length>1 ? items.map(function(i){
+    return '<button class="opt" data-k="'+esc(i.key)+'" aria-pressed="'+(i.key===TAPE.key)+'">'+esc(i.label)+'</button>';
+  }).join('') : '';
+  var cur=items.filter(function(i){return i.key===TAPE.key;})[0];
+  document.getElementById('tapeSub').textContent = cur? cur.label : '';
+  Array.prototype.forEach.call(document.querySelectorAll('#tapePick .opt'),function(b){
+    b.addEventListener('click',function(){ TAPE.key=b.getAttribute('data-k'); renderTapeTabs(); });
+  });
+  loadTape();
+}
+function loadTape(){
+  var body=document.getElementById('tapeBody'), sum=document.getElementById('tapeSum');
+  if(!TAPE.key){ body.innerHTML='<div class="tape-empty">Nothing to show for this card.</div>'; sum.innerHTML=''; return; }
+  body.innerHTML='<div class="tape-empty">Loading the tape…</div>'; sum.innerHTML='';
+  var want=TAPE.tab+':'+TAPE.key;
+  var url='/api/tape?'+(TAPE.tab==='alert'?'alert=':'contract=')+encodeURIComponent(TAPE.key)+
+          (TAPE.tab==='contract' && META.session ? '&date='+encodeURIComponent(META.session) : '');
+  fetch(url,{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(d){
+    if(TAPE.tab+':'+TAPE.key!==want) return;         /* a newer click won */
+    renderTapeRows(d);
+  }).catch(function(){
+    body.innerHTML='<div class="tape-empty">The tape needs the desk running: start it with START_HERE.bat, '+
+      'or open the ticker on Unusual Whales with the link above.</div>';
+  });
+}
+function renderTapeRows(d){
+  var body=document.getElementById('tapeBody'), sum=document.getElementById('tapeSum');
+  if(d.error){ body.innerHTML='<div class="tape-empty">'+esc(d.error)+'</div>'; sum.innerHTML=''; return; }
+  var s=d.summary||{}, rows=d.trades||[];
+  sum.innerHTML = rows.length ? [
+    ['Prints', cnum(s.trades)+(s.canceled?' (+'+s.canceled+' canceled)':'')],
+    ['Contracts', cnum(s.contracts)], ['Premium', usd(s.premium)],
+    ['At the ask', s.ask_share==null?'--':pct(s.ask_share)],
+    ['Avg fill', s.vwap==null?'--':'$'+s.vwap.toFixed(2)],
+    ['Sweeps', cnum(s.sweeps)]
+  ].map(function(x){ return '<span>'+x[0]+' <span class="num">'+x[1]+'</span></span>'; }).join('') : '';
+  if(!rows.length){ body.innerHTML='<div class="tape-empty">'+esc(d.note||'No trades returned.')+'</div>'; return; }
+  var multi=(s.options||[]).length>1;
+  var h='<table class="tape"><thead><tr><th>Time ET</th>'+(multi?'<th>Contract</th>':'')+
+    '<th class="n">Contracts</th><th class="n">Price</th><th class="n">Bid × Ask</th><th>Side</th>'+
+    '<th class="n">Premium</th><th>Exch</th><th>Flags</th><th class="n">Stock</th><th class="n">IV</th>'+
+    '<th class="n">Vol / OI</th></tr></thead><tbody>';
+  rows.forEach(function(t){
+    var dec=multi? decodeOsi(t.option) : null;
+    h+='<tr'+(t.canceled?' class="cx" title="canceled print"':'')+'><td class="n" style="text-align:left">'+esc(t.time_et||'')+'</td>'+
+      (multi?'<td>'+esc(dec?dec.text:(t.option||''))+'</td>':'')+
+      '<td class="n">'+cnum(t.contracts)+'</td>'+
+      '<td class="n">'+(t.price==null?'--':t.price.toFixed(2))+'</td>'+
+      '<td class="n">'+(t.bid==null||t.ask==null||(!t.bid&&!t.ask)?'--':t.bid.toFixed(2)+' × '+t.ask.toFixed(2))+'</td>'+
+      '<td class="side-'+t.side+'">'+({ask:'Ask',bid:'Bid',mid:'Mid',none:'No side'})[t.side]+'</td>'+
+      '<td class="n">'+usd(t.premium)+'</td>'+
+      '<td>'+esc(t.exchange||'')+'</td>'+
+      '<td>'+(t.flags||[]).map(function(f){return '<span class="flag">'+esc(f)+'</span>';}).join('')+'</td>'+
+      '<td class="n">'+(t.underlying==null?'--':t.underlying.toFixed(2))+'</td>'+
+      '<td class="n">'+(t.iv==null?'--':(t.iv*100).toFixed(0)+'%')+'</td>'+
+      '<td class="n">'+(t.volume==null?'--':cnum(t.volume))+' / '+(t.oi==null?'--':cnum(t.oi))+'</td></tr>';
+  });
+  body.innerHTML=h+'</tbody></table>';
+}
+function bindTape(){
+  document.getElementById('tapeClose').addEventListener('click',closeTape);
+  document.getElementById('tabAlert').addEventListener('click',function(){ TAPE.tab='alert'; TAPE.key=null; renderTapeTabs(); });
+  document.getElementById('tabContract').addEventListener('click',function(){ TAPE.tab='contract'; TAPE.key=null; renderTapeTabs(); });
+  document.getElementById('tapeModal').addEventListener('click',function(e){ if(e.target===this) closeTape(); });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && document.getElementById('tapeModal').dataset.open==='true'){ e.stopPropagation(); closeTape(); }
+  },true);
+}
+
+/* ---------- share card ---------- */
+var current=null, optDetail=true, optDark=true;
+var SH={ dark:{bg:'#1a1a19',panel:'#232321',line:'#3a3a36',ink:'#ffffff',ink2:'#c3c2b7',
+               ink3:'#8d8c82',accent:'#3987e5',bull:'#199e70',bear:'#e66767',track:'#34342f'},
+         light:{bg:'#fcfcfb',panel:'#f4f4f1',line:'#e2e1dc',ink:'#0b0b0b',ink2:'#52514e',
+                ink3:'#84827b',accent:'#2a78d6',bull:'#1baf7a',bear:'#e34948',track:'#e8e7e2'} };
+var W=1080, MAXH=1350;   /* 4:5 at 1080 wide is 1350, not 1400 -- a card at the cap
+                            was otherwise guaranteed to lose its provenance footer. */
+
+function fitText(ctx,s,max){           /* labels ellipsise */
+  if(ctx.measureText(s).width<=max) return s;
+  var t=s;
+  while(t.length>1 && ctx.measureText(t+'…').width>max) t=t.slice(0,-1);
+  return t+'…';
+}
+function wrapText(ctx,s,max){          /* sentences wrap -- ellipsising one deletes its point */
+  var words=String(s).split(/\s+/), lines=[], line='';
+  for(var i=0;i<words.length;i++){
+    var t=line?line+' '+words[i]:words[i];
+    if(ctx.measureText(t).width>max && line){ lines.push(line); line=words[i]; }
+    else line=t;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function drawCard(ctx,c,P,detail,measureOnly,H){
+  H = H || MAXH;
+  var pad=56, x=pad, w=W-pad*2, y=0;
+  var TF=window.UWTheme;
+  var sans=TF?TF.font('body','"IBM Plex Sans",sans-serif'):'"IBM Plex Sans",sans-serif';
+  function set(px,weight,fam){ ctx.font=(weight||400)+' '+px+'px '+(fam||sans); }
+  var mono=TF?TF.font('num','"IBM Plex Mono",monospace'):'"IBM Plex Mono",monospace',
+      cond=TF?TF.font('head','"IBM Plex Sans Condensed",sans-serif'):'"IBM Plex Sans Condensed",sans-serif';
+  if(!measureOnly){ ctx.fillStyle=P.bg; ctx.fillRect(0,0,W,H); }
+
+  y=64;
+  /* eyebrow */
+  if(!measureOnly){ ctx.fillStyle=P.ink3; }
+  set(20,600,cond); ctx.letterSpacing='2px';
+  if(!measureOnly) ctx.fillText('UNUSUAL OPTIONS FLOW',x,y);
+  ctx.letterSpacing='0px';
+  y+=18;
+
+  /* ticker + score */
+  set(86,700,cond);
+  if(!measureOnly){ ctx.fillStyle=P.ink; ctx.fillText(detail?c.ticker:'••••',x,y+70); }
+  set(72,500,mono);
+  var sc=c.score.toFixed(1);
+  var sw=ctx.measureText(sc).width;
+  if(!measureOnly){ ctx.fillStyle=P.ink; ctx.textAlign='right'; ctx.fillText(sc,W-pad,y+70);
+    set(22,500,mono); ctx.fillStyle=P.ink3; ctx.fillText('/100',W-pad,y+98); ctx.textAlign='left'; }
+  y+=76;
+  set(24,500);
+  if(!measureOnly){ ctx.fillStyle=P.ink3;
+    ctx.fillText(detail? (c.sector||'') : ((c.sector||'')+' · name withheld'), x, y+24); }
+  y+=56;
+
+  /* direction */
+  var dcol = c.direction==='bullish'?P.bull:(c.direction==='bearish'?P.bear:P.ink3);
+  set(26,600,cond); ctx.letterSpacing='2px';
+  var dtxt=(c.direction||'no direction').toUpperCase();
+  if(!measureOnly){
+    var dw=ctx.measureText(dtxt).width+26;
+    ctx.strokeStyle=dcol; ctx.lineWidth=2; ctx.strokeRect(x,y,dw,40);
+    ctx.fillStyle=dcol; ctx.fillText(dtxt,x+13,y+27);
+  }
+  ctx.letterSpacing='0px';
+  y+=72;
+
+  /* ask/bid split bar */
+  var share=c.ask_share;
+  set(22,600,cond); ctx.letterSpacing='1.5px';
+  if(!measureOnly){ ctx.fillStyle=P.ink3; ctx.fillText('ASK SIDE OF DIRECTIONAL VOLUME',x,y); }
+  ctx.letterSpacing='0px';
+  y+=20;
+  if(!measureOnly){
+    ctx.fillStyle=P.track; ctx.fillRect(x,y,w,22);
+    if(share!=null){ ctx.fillStyle=P.accent; ctx.fillRect(x,y,w*share,22); }
+    /* the 75% gate, drawn on the scale it refers to */
+    ctx.fillStyle=P.ink3; ctx.fillRect(x+w*0.75-1,y-8,2,38);
+    set(18,600,cond); ctx.fillStyle=P.ink3;
+    ctx.fillText('75% GATE',x+w*0.75+8,y-12);
+  }
+  /* 40 put a 30px baseline 18px under a 22px bar -- the ascenders overlapped
+     the bar. Measured, not guessed: ascent of the 30px face plus a 10px gap. */
+  y+=56;
+  set(30,500,mono);
+  if(!measureOnly){ ctx.fillStyle=P.ink;
+    ctx.fillText(share!=null?(share*100).toFixed(1)+'%':'not measured',x,y);
+    ctx.textAlign='right'; ctx.fillText(usd(c.ask_premium)+' bought',W-pad,y); ctx.textAlign='left'; }
+  y+=46;
+
+  /* the print */
+  var tc=topContract(c), dec=tc?decodeOsi(tc.option_symbol):null;
+  if(dec&&tc){
+    if(!measureOnly){ ctx.fillStyle=P.panel; ctx.fillRect(x,y,w,detail?132:96); }
+    var iy=y+34;
+    set(22,400,mono);
+    if(!measureOnly && detail){ ctx.fillStyle=P.ink3;
+      ctx.fillText(fitText(ctx,tc.option_symbol,w-40),x+20,iy); }
+    if(detail) iy+=34;
+    set(34,600,cond);
+    if(!measureOnly){ ctx.fillStyle=P.ink;
+      var line = detail? dec.text : dec.text.replace(dec.root,'••••');
+      ctx.fillText(fitText(ctx,line,w-40),x+20,iy); }
+    iy+=34;
+    set(22,400,mono);
+    if(!measureOnly){ ctx.fillStyle=P.ink2;
+      ctx.fillText(fitText(ctx,'vol '+cnum(tc.volume)+'   OI '+cnum(tc.open_interest)+
+        '   '+usd(parseFloat(tc.premium))+'   '+(dteOf(tc.expiry,c.session))+'d',w-40),x+20,iy); }
+    y+= (detail?132:96)+34;
+  }
+
+  /* meters */
+  set(22,600,cond); ctx.letterSpacing='1.5px';
+  if(!measureOnly){ ctx.fillStyle=P.ink3; ctx.fillText('WHERE THE SCORE CAME FROM',x,y); }
+  ctx.letterSpacing='0px';
+  y+=26;
+  /* Same shared scale as the board: track = the component's maximum weight,
+     fill = points earned. The canvas used to draw every track the same length,
+     which is the misleading version -- and the share image is the thing that
+     leaves the desk, so it is the one that most needs to be right. */
+  var SCALE=Math.max.apply(null,METERS.map(function(m){return c.max_parts[m[0]]||0;}));
+  METERS.forEach(function(m){
+    var v=c.parts[m[0]]||0, mx=c.max_parts[m[0]]||0;
+    set(24,600,cond);
+    if(!measureOnly){ ctx.fillStyle=P.ink2; ctx.fillText(m[1],x,y+18); }
+    var bx=x+250, bw=w-250-150;
+    if(!measureOnly && SCALE>0){
+      ctx.fillStyle=P.track;
+      ctx.fillRect(bx,y+6,bw*(mx/SCALE),14);
+      ctx.fillStyle=P.accent;
+      ctx.fillRect(bx,y+6,bw*(Math.max(0,Math.min(mx,v))/SCALE),14);
+      set(24,500,mono); ctx.fillStyle=P.ink; ctx.textAlign='right';
+      ctx.fillText(v.toFixed(1)+' / '+mx, W-pad, y+19); ctx.textAlign='left';
+    }
+    y+=34;
+  });
+  y+=10;
+  set(20,400);
+  if(!measureOnly){ ctx.fillStyle=P.ink3;
+    ctx.fillText('Bar length is points; a full bar means that component is maxed.',x,y); }
+  y+=28;
+
+  /* evidence, dropped one at a time until it fits */
+  var chips=evidenceChips(c).map(function(e){return e[1];});
+  set(23,400);
+  var used=chips.slice();
+  var lines=[];
+  function layout(list){
+    lines=[];
+    var line='';
+    list.forEach(function(t){
+      var cand=line?line+'   ·   '+t:t;
+      if(ctx.measureText(cand).width>w && line){ lines.push(line); line=t; }
+      else line=cand;
+    });
+    if(line) lines.push(line);
+    return lines;
+  }
+  layout(used);
+  var footH=132;
+  while(used.length>1 && y+lines.length*30+footH > H){ used.pop(); layout(used); }
+  if(used.length<chips.length) lines.push('+'+(chips.length-used.length)+' more signals not shown');
+  if(!measureOnly){ ctx.fillStyle=P.ink2;
+    lines.forEach(function(L){ ctx.fillText(L,x,y+22); y+=30; }); }
+  else { y+=lines.length*30; }
+
+  /* footer -- provenance and the honest caveat, always on the image */
+  var fy=H-96;
+  if(!measureOnly){
+    ctx.strokeStyle=P.line; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,fy-26); ctx.lineTo(W-pad,fy-26); ctx.stroke();
+    set(21,400); ctx.fillStyle=P.ink3;
+    var caveat='Session '+c.session+'. Open interest confirms the next morning, so '+
+      'today’s flow is unconfirmed. Flow data: Unusual Whales. Not investment advice.';
+    wrapText(ctx,caveat,w).slice(0,3).forEach(function(L,i){ ctx.fillText(L,x,fy+i*26); });
+  }
+  return y;
+}
+
+/* theme engine (dashboard): card colours and fonts follow the active theme; Paper = unchanged */
+function uwPal(base,dark){ return window.UWTheme ? window.UWTheme.pal(base,dark) : base; }
+window.addEventListener('uw-theme',function(){ if(current) renderShot(); });
+
+function renderShot(){
+  if(!current) return;
+  var cv=document.getElementById('shot');
+  var ctx=cv.getContext('2d');
+  var P=uwPal(optDark?SH.dark:SH.light, optDark);
+  ctx.textBaseline='alphabetic';
+  /* Measure, then size the canvas to the content. A fixed 1350 left a third of
+     every card empty; resizing a canvas clears it, so this has to be two
+     passes with the height fed back in. */
+  var contentY=drawCard(ctx,current,P,optDetail,true,MAXH);
+  var H=Math.max(620,Math.min(MAXH,Math.round(contentY)+140));
+  cv.width=W; cv.height=H;
+  ctx=cv.getContext('2d');
+  ctx.textBaseline='alphabetic';
+  drawCard(ctx,current,P,optDetail,false,H);
+}
+function draftCaption(c){
+  var tc=topContract(c), dec=tc?decodeOsi(tc.option_symbol):null;
+  var who=optDetail? c.ticker : 'A '+(c.sector||'US equity').toLowerCase()+' name';
+  var s=who+': '+pct(c.ask_share,1)+' of directional option volume printed on the ask, '+
+    usd(c.ask_premium)+' bought. ';
+  if(dec) s+='Biggest print '+(optDetail?dec.text:dec.text.replace(dec.root,'').trim())+
+    ', volume '+cnum(tc.volume)+' against '+cnum(tc.open_interest)+' open interest. ';
+  if(c.detail.sweep.strongest_rule) s+='Rule: '+c.detail.sweep.strongest_rule.replace(/([a-z])([A-Z])/g,'$1 $2')+'. ';
+  s+='Flow score '+c.score.toFixed(1)+'/100, carried by '+
+     c.carried_by.join(' and ')+'. Open interest confirms tomorrow.';
+  return s;
+}
+function openShare(c){
+  current=c;
+  document.getElementById('modal').dataset.open='true';
+  document.getElementById('cap').value=draftCaption(c);
+  renderShot();
+  document.getElementById('btnClose').focus();
+}
+function closeShare(){ document.getElementById('modal').dataset.open='false'; current=null; }
+
+function bindOpts(){
+  bindTape();
+  function pair(aId,bId,set){
+    var a=document.getElementById(aId), b=document.getElementById(bId);
+    a.addEventListener('click',function(){ set(true); a.setAttribute('aria-pressed','true');
+      b.setAttribute('aria-pressed','false'); renderShot();
+      document.getElementById('cap').value=draftCaption(current); });
+    b.addEventListener('click',function(){ set(false); b.setAttribute('aria-pressed','true');
+      a.setAttribute('aria-pressed','false'); renderShot();
+      document.getElementById('cap').value=draftCaption(current); });
+  }
+  pair('optDetail','optAnon',function(v){ optDetail=v; });
+  pair('optDark','optLight',function(v){ optDark=v; });
+
+  document.getElementById('btnClose').addEventListener('click',closeShare);
+  document.getElementById('modal').addEventListener('click',function(e){
+    if(e.target===this) closeShare(); });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && document.getElementById('modal').dataset.open==='true'){
+      e.stopPropagation(); closeShare(); }
+  },true);
+
+  var hint=document.getElementById('hint');
+  var copyBtn=document.getElementById('btnCopy');
+  if(!(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write)){
+    copyBtn.disabled=true; copyBtn.style.opacity=.5;
+    hint.textContent='Clipboard images are not available here — use Download PNG.';
+  }
+  copyBtn.addEventListener('click',function(){
+    document.getElementById('shot').toBlob(function(b){
+      navigator.clipboard.write([new ClipboardItem({'image/png':b})]).then(function(){
+        hint.textContent='Image copied.';
+      },function(){ hint.textContent='Copy failed — use Download PNG.'; });
+    });
+  });
+  /* Two hosts, two save paths. On the local desk this page is served from
+     127.0.0.1 and a plain anchor download works. Inside the claude.ai artifact
+     viewer an anchor download is inert, so the page asks the platform to hand
+     the viewer the file instead. Resolve once at boot and keep the reference. */
+  var saver=null;
+  if(window.claude && typeof window.claude.use==='function'){
+    window.claude.use('downloads').then(function(d){ saver=d; },function(){});
+  }
+  document.getElementById('btnDl').addEventListener('click',function(){
+    var name='flow-'+(optDetail?current.ticker:'anon')+'-'+current.session+'.png';
+    var cv=document.getElementById('shot');
+    if(saver){
+      cv.toBlob(function(b){
+        saver.save({filename:name,data:b}).then(function(){
+          hint.textContent='Saved '+name;
+        },function(e){
+          hint.textContent = (e&&e.code==='declined') ? 'Save cancelled.'
+            : 'Could not save the image here.';
+        });
+      },'image/png');
+      return;
+    }
+    var a=document.createElement('a');
+    a.download=name;
+    a.href=cv.toDataURL('image/png');
+    a.click();
+    hint.textContent='Saved '+name;
+  });
+  document.getElementById('btnCapCopy').addEventListener('click',function(){
+    navigator.clipboard.writeText(document.getElementById('cap').value).then(function(){
+      hint.textContent='Caption copied.'; },function(){ hint.textContent='Copy failed.'; });
+  });
+}
+
+function boot(){
+  renderStats(); renderLanes(); renderGrid(); bindOpts();
+}
+function applyBoard(d){
+  DATA=d; META=d.meta||META; CARDS=d.cards||[];
+  if(!META.captured_et && META.scanned_at) META.captured_et=META.scanned_at.slice(11,16)+'Z';
+  LOADED=true;
+  renderStats(); renderLanes(); renderGrid();
+  var warn=document.getElementById('warnbar');
+  var ws=(META.warnings||[]);
+  if(ws.length){
+    /* Two different problems used to share one sentence, and the setup case --
+       the one a new install actually hits -- came out as
+       "Endpoint shape problem: scan returned no API token found".
+       A message a first-time reader cannot act on is worse than none. */
+    warn.style.display='block';
+    warn.innerHTML = ws.map(function(w){
+      return w.endpoint==='scan'
+        ? '<b>The desk cannot scan yet.</b> '+esc(w.shape)
+        : '<b>Unexpected response from '+esc(w.endpoint)+'.</b> Got '+esc(w.shape)+
+          ' \u2014 the board may be incomplete.';
+    }).join('<br>');
+  } else { warn.style.display='none'; }
+}
+function poll(){
+  fetch('/api/flow',{cache:'no-store'}).then(function(r){return r.json();})
+    .then(function(d){
+      applyBoard(d);
+      document.getElementById('staleness').textContent='';
+    })
+    .catch(function(){
+      /* Never fail silently and never blank a good board: keep the last one
+         and say it is stale. GEX ES Desk showed an empty chart with no error
+         and cost two rounds of guessing. */
+      document.getElementById('staleness').textContent=
+        'Lost contact with the desk \u2014 showing the last board it sent. '+
+        'Is the START_HERE window still open?';
+    });
+}
+boot();
+poll();
+setInterval(poll,60000);
+})();
+</script>
+
+</body>
+</html>
