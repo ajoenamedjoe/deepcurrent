@@ -14,7 +14,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DESKS = ["Valuation Desk", "UW Flow Desk", "Confluence Desk", "Institutional Desk",
-         "Swing Desk"]
+         "Swing Desk", "Growth Desk"]
 TOKEN_LINE = re.compile(r"^(UW_API_TOKEN|UW_TOKEN)\s*=.*$")
 
 
